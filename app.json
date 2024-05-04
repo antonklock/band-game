@@ -15,7 +15,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.klockworks.band-game"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,6 +26,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "38c8375b-de2b-4d95-91de-29f2d096deea"
+      }
+    },
+    "owner": "klock"
   }
 }

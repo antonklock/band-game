@@ -90,14 +90,20 @@ const styles = StyleSheet.create({
   },
 });
 
-const searchBandName = async (bandName: string) => {
-  console.log("Search band: " + bandName);
-  const key = process.env.EXPO_PUBLIC_LASTFM_API_KEY;
-  console.log("Key: " + key);
-  // const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=artist.search&artist=cher&api_key=${process.env.EXPO_PUBLIC_LASTFM_API_KEY}&format=json`)
-  //   .then(response => {
-  //     const res = response.json()
-  //     console.log(res)
-  //   })
-  //   .catch(error => console.log(error))
+const searchBandName = async (searchTerm: string) => {
+  console.log("Searching for: " + searchTerm);
+
+  const apiUrl = `http://ws.audioscrobbler.com/2.0/?method=artist.search&artist=${searchTerm}&api_key=${process.env.EXPO_PUBLIC_LASTFM_API_KEY}&format=json`;
+
+  // Make a post request to api url
+  const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+  });
+  
+  // Parse the response
+  const data = await response.json();
+  console.log(data);
 }

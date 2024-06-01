@@ -1,37 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { Audio } from 'expo-av';
-import { Asset } from 'expo-asset';
-
-const music = {
-    mainMenu: require("../assets/music/main-menu-music.mp3")
-}
 
 export const MusicPlayer = () => {
     const [sound, setSound] = useState<Audio.Sound | undefined>(undefined);
 
     async function playSound() {
+        console.log('Loading Sound');
+
         try {
-            console.log("Asset Path:", music.mainMenu);
-            const asset = Asset.fromModule(music.mainMenu);
-            console.log("Asset:", asset);
-            await asset.downloadAsync();
-            console.log("Asset Downloaded:", asset);
-            const { sound } = await Audio.Sound.createAsync(asset);
+            const { sound } = await Audio.Sound.createAsync(require("../assets/music/main-menu-music.mp3"));
             setSound(sound);
-            await sound.playAsync();    
-        } catch (e) {
-            console.log("Error playing sound: ", e);
+
+            console.log('Playing Sound');
+            await sound.playAsync();
+        } catch (error) {
+            console.log('Error playing sound', error);
         }
+        
     }
-    
+
     useEffect(() => {
-    return sound
-      ? () => {
-          sound.unloadAsync();
-        }
-      : undefined;
-  }, [sound]);
+        return sound
+        ? () => {
+            console.log('Unloading Sound');
+            sound.unloadAsync();
+            }
+        : undefined;
+    }, [sound]);
 
     return (
         <View style={styles.component}>

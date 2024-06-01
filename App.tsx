@@ -1,4 +1,5 @@
-import { NavigationContainer } from '@react-navigation/native';
+import { StatusBar } from 'react-native';
+import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './components/HomeScreen';
 import ProfileScreen from './components/ProfileScreen';
@@ -12,16 +13,23 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="NewGame" component={NewGame} />
-        <Stack.Screen name="HighScores" component={HighScores} />
-        <Stack.Screen name="OngoingGames" component={OngoingGames} />
-        <Stack.Screen name="GameStore" component={GameStore} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
-        <Stack.Screen name="Chat" component={ChatScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <>
+    <StatusBar barStyle="light-content" />
+    <NavigationContainer theme={DarkTheme}>
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: '#1E1E1E' }
+        }}>
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="NewGame" component={NewGame} />
+          <Stack.Screen name="HighScores" component={HighScores} />
+          <Stack.Screen name="OngoingGames" component={OngoingGames} />
+          <Stack.Screen name="GameStore" component={GameStore} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Chat" component={ChatScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </>
   );
 }

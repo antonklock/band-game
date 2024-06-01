@@ -16,13 +16,16 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.klockworks.band-game"
+      "bundleIdentifier": "com.klockworks.band-game",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "googleServicesFile": "./google-services.json",
+      "package": "com.klockworks.band-game"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -32,6 +35,17 @@
         "projectId": "38c8375b-de2b-4d95-91de-29f2d096deea"
       }
     },
-    "owner": "klock"
+    "owner": "klock",
+    "plugins": [
+      "@react-native-firebase/app",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ]
   }
 }

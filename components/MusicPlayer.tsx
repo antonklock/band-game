@@ -1,23 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
 
-export const MusicPlayer = () => {
+const menuMusic = require("../assets/music/main-menu-music_short.mp3");
+
+const MusicPlayer = () => {
     const [sound, setSound] = useState<Audio.Sound | undefined>(undefined);
 
     async function playSound() {
-        console.log('Loading Sound');
-
         try {
-            const { sound } = await Audio.Sound.createAsync(require("../assets/music/main-menu-music.mp3"));
-            setSound(sound);
+            // Verify if the file exists
+            const fileUri = FileSystem.documentDirectory + 'main-menu-music.mp3';
+            const info = await FileSystem.getInfoAsync(fileUri);
+            console.log("File exists:", info.exists);
 
-            console.log('Playing Sound');
+            console.log("Loading sound...");
+            const { sound } = await Audio.Sound.createAsync(menuMusic);
+            console.log("Sound loaded:", sound);
+            setSound(sound);
             await sound.playAsync();
-        } catch (error) {
-            console.log('Error playing sound', error);
+            console.log("Sound playing");
+        } catch (e) {
+            console.error("Error playing sound:", e);
         }
-        
     }
 
     useEffect(() => {
@@ -58,3 +64,5 @@ const styles = StyleSheet.create({
         backgroundColor: "blue"
     }
 })
+
+export default MusicPlayer;

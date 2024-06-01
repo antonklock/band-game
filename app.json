@@ -25,6 +25,8 @@
       }
     },
     "web": {
+      "bundler": "metro",
+      "output": "static",
       "favicon": "./assets/favicon.png"
     },
     "extra": {
@@ -34,7 +36,7 @@
     },
     "owner": "klock",
     "plugins": [
-      "expo-asset"
+      "expo-router"
     ]
   }
 }

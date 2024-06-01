@@ -1,4 +1,4 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import NavButton from "./Menu/NavButton";
 import WelcomeTicker from "./Menu/WelcomeTicker";
 import HomeLogo from "./Menu/HomeLogo";
@@ -18,6 +18,7 @@ export default function HomeScreen({navigation}: {navigation: any}) {
                 <NavButton title={"High scores"} navigation={navigation} navigateTo="HighScores" icon="highscores" />
                 <NavButton title={"Game Store"} navigation={navigation} navigateTo="GameStore" icon="game-store" />
             </View>
+            <Text style={styles.text}> Hello! </Text>
         </View>
     );
 }
@@ -37,5 +38,8 @@ const styles = StyleSheet.create({
     },
     buttons: {
         width: "90%"
+    },
+    text: {
+        color: "white"
     }
 });

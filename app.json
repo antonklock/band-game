@@ -12,6 +12,7 @@
       "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": [
+      "assets/music/*",
       "**/*"
     ],
     "ios": {
@@ -32,6 +33,9 @@
         "projectId": "38c8375b-de2b-4d95-91de-29f2d096deea"
       }
     },
-    "owner": "klock"
+    "owner": "klock",
+    "plugins": [
+      "expo-asset"
+    ]
   }
 }

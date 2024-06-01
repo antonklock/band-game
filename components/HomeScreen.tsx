@@ -2,6 +2,7 @@ import { View, StyleSheet } from "react-native";
 import NavButton from "./Menu/NavButton";
 import WelcomeTicker from "./Menu/WelcomeTicker";
 import HomeLogo from "./Menu/HomeLogo";
+import { MusicPlayer } from "./MusicPlayer";
 
 export default function HomeScreen({navigation}: {navigation: any}) {
     return (
@@ -18,6 +19,7 @@ export default function HomeScreen({navigation}: {navigation: any}) {
                 <NavButton title={"High scores"} navigation={navigation} navigateTo="HighScores" icon="highscores" />
                 <NavButton title={"Game Store"} navigation={navigation} navigateTo="GameStore" icon="game-store" />
             </View>
+            <MusicPlayer />
         </View>
     );
 }

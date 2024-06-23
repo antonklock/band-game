@@ -17,7 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.klockworks.band-game",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./ios/bandgame/GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {

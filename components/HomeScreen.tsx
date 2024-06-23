@@ -4,6 +4,7 @@ import WelcomeTicker from "./Menu/WelcomeTicker";
 import HomeLogo from "./Menu/HomeLogo";
 import React from "react";
 import NameTest from "./Firebase/NameTest";
+import Login from "./Firebase/Login";
 
 export default function HomeScreen({ navigation }: { navigation: any }) {
   return (
@@ -27,7 +28,7 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
           navigateTo="OngoingGames"
           icon="ongoing-games"
         />
-        <NavButton
+        {/* <NavButton
           title={"High scores"}
           navigation={navigation}
           navigateTo="HighScores"
@@ -38,9 +39,27 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
           navigation={navigation}
           navigateTo="GameStore"
           icon="game-store"
+        /> */}
+        <NavButton
+          title={"Register"}
+          navigation={navigation}
+          navigateTo="Register"
+          icon="game-store"
+        />
+        <NavButton
+          title={"Login"}
+          navigation={navigation}
+          navigateTo="Login"
+          icon="highscores"
+        />
+        <NavButton
+          title={"Profile"}
+          navigation={navigation}
+          navigateTo="Profile"
+          icon="ongoing-games"
         />
       </View>
-      <NameTest />
+      {/* <NameTest /> */}
     </View>
   );
 }

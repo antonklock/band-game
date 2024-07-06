@@ -11,6 +11,9 @@ import GameStore from "./components/GameStore/GameStore";
 
 import RegisterScreen from "./components/auth/RegisterScreen";
 import LoginScreen from "./components/auth/LoginScreen";
+import SettingsScreen from "./components/FooterMenu/Settings/SettingsScreen";
+import AccountScreen from "./components/FooterMenu/Account/AccountScreen";
+import RulesScreen from "./components/FooterMenu/Rules/RulesScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +37,9 @@ export default function App() {
           <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Settings" component={SettingsScreen} />
+          <Stack.Screen name="Account" component={AccountScreen} />
+          <Stack.Screen name="Rules" component={RulesScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </>

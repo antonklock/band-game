@@ -1,9 +1,8 @@
-// LoginScreen.js
 import React, { useState } from "react";
 import { View, TextInput, Button, Text, StyleSheet } from "react-native";
 import { loginUser } from "../../firebase/auth";
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation }: { navigation: any }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -12,6 +11,7 @@ export default function LoginScreen() {
     try {
       const user = await loginUser(email, password);
       console.log("User logged in:", user);
+      navigation.navigate("Home");
     } catch (error) {
       //@ts-ignore
       setError(error.message);
@@ -34,7 +34,7 @@ export default function LoginScreen() {
         secureTextEntry
       />
       <Button title="Login" onPress={handleLogin} />
-      {error && <Text>{error}</Text>}
+      {error && <Text style={styles.text}>{error}</Text>}
     </View>
   );
 }

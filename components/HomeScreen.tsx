@@ -1,9 +1,8 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import NavButton from "./Menu/NavButton";
 import WelcomeTicker from "./Menu/WelcomeTicker";
 import HomeLogo from "./Menu/HomeLogo";
 import React from "react";
-import Login from "./Firebase/Login";
 import FooterMenu from "./FooterMenu/FooterMenu";
 import { auth } from "../firebaseConfig";
 import { useEffect, useState } from "react";
@@ -31,7 +30,8 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
         <HomeLogo />
       </View>
       {!user && (
-        <View style={styles.buttons}>
+        <View style={styles.loginButtons}>
+          <Text style={styles.text}>Please login to play</Text>
           <NavButton
             icon={"highscores"}
             title={"Login"}
@@ -71,9 +71,7 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
           </View>
         </>
       )}
-
       <FooterMenu navigation={navigation} />
-      {/* <NameTest /> */}
     </View>
   );
 }
@@ -93,6 +91,11 @@ const styles = StyleSheet.create({
   },
   buttons: {
     width: "90%",
+  },
+  loginButtons: {
+    width: "90%",
+    alignItems: "center",
+    marginTop: 50,
   },
   text: {
     color: "white",

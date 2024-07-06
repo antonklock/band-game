@@ -34,6 +34,7 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
         secureTextEntry
       />
       <Button title="Login" onPress={handleLogin} />
+      <Button title="Back" onPress={() => navigation.navigate("Home")} />
       {error && <Text style={styles.text}>{error}</Text>}
     </View>
   );

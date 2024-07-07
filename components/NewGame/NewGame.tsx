@@ -1,26 +1,26 @@
-import {
-  View,
-  Text,
-  Button,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
-import CountDown from "./CountDown";
+import React from "react";
+import { StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import { useState } from "react";
+import StartRoundButton from "./StartRoundButton";
+import ChatInput from "./ChatInput";
+import GameContent from "./GameContent";
+import GameHeader from "./GameHeader";
 
 export default function NewGame({ navigation }: { navigation: any }) {
+  const [roundStarted, setRoundStarted] = useState(false);
   const [currentBandName, setCurrentBandName] = useState("The Cardigans");
   const [inputBandName, setInputBandName] = useState("");
+
+  const handleSetRoundStarted = () => {
+    setRoundStarted(true);
+  };
 
   const checkValidBandNameAndChange = () => {
     if (
       currentBandName[currentBandName.length - 1].toLowerCase() ===
       inputBandName[0].toLowerCase()
     ) {
-      // If it does, update current band name
       setCurrentBandName(inputBandName);
-      // Reset input band name
       setInputBandName("");
 
       console.log("Valid band name");
@@ -29,41 +29,24 @@ export default function NewGame({ navigation }: { navigation: any }) {
     }
   };
   return (
-    <View style={styles.container}>
-      <View style={styles.gameHeader}>
-        <Button
-          title="Home"
-          onPress={() => {
-            navigation.navigate("Home");
-          }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <GameHeader navigation={navigation} roundStarted={roundStarted} />
+      <GameContent
+        currentBandName={currentBandName}
+        inputBandName={inputBandName}
+      />
+      {roundStarted ? (
+        <ChatInput
+          setInputBandName={setInputBandName}
+          checkValidBandNameAndChange={checkValidBandNameAndChange}
         />
-        <Text style={styles.heading}>
-          This is the <Text style={{ color: "yellow" }}>New Game</Text> Screen!
-        </Text>
-        <Text style={styles.text}>Countdown</Text>
-        <CountDown countdownTime={20} />
-      </View>
-      <View style={styles.gameContent}>
-        <Text style={styles.text}>Band name</Text>
-        <Text style={styles.text}>{currentBandName}</Text>
-        <Text style={styles.text}>{inputBandName}</Text>
-      </View>
-      <View style={styles.inputView}>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Enter band name"
-          onChangeText={setInputBandName}
-        ></TextInput>
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={() => {
-            checkValidBandNameAndChange();
-          }}
-        >
-          <Text style={styles.text}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      ) : (
+        <StartRoundButton setRoundStarted={handleSetRoundStarted} />
+      )}
+    </KeyboardAvoidingView>
   );
 }
 
@@ -73,7 +56,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     height: "100%",
-    paddingVertical: 40,
   },
   heading: {
     fontSize: 24,
@@ -86,12 +68,18 @@ const styles = StyleSheet.create({
     display: "flex",
     gap: 4,
     alignItems: "center",
+    paddingTop: 40,
   },
   gameContent: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "#141414",
+    width: "95%",
+    flex: 1,
+    marginVertical: 20,
+    borderRadius: 10,
   },
   text: {
     color: "white",
@@ -125,5 +113,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flex: 1,
+  },
+  readyButtonView: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
   },
 });

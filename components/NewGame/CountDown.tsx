@@ -2,14 +2,16 @@ import { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 
 type CountDownProps = {
+  roundStarted: boolean;
   countdownTime: number;
 };
 
 export default function CountDown(props: CountDownProps) {
-  const { countdownTime } = props;
+  const { countdownTime, roundStarted } = props;
   const [countdown, setCountdown] = useState(countdownTime);
 
   const countdownTimer: NodeJS.Timeout = setTimeout(() => {
+    if (!roundStarted) return clearTimeout(countdownTimer);
     if (countdown < 0) return clearTimeout(countdownTimer);
     setCountdown(countdown - 1);
   }, 1000);

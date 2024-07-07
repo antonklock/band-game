@@ -40,7 +40,6 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
           />
         </View>
       )}
-
       {user && (
         <>
           <View style={styles.buttons}>

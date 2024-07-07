@@ -5,43 +5,66 @@ import StartRoundButton from "./StartRoundButton";
 import ChatInput from "./ChatInput";
 import GameContent from "./GameContent";
 import GameHeader from "./GameHeader";
+import { GameData } from "../../types";
+
+const initialGameData: GameData = {
+  players: {
+    player1: {
+      name: "Player 1",
+      score: 0,
+    },
+    player2: {
+      name: "Player 2",
+      score: 0,
+    },
+  },
+  bands: [
+    {
+      name: "The Cardigans",
+      guesser: "player1",
+    },
+  ],
+  currentBandName: "The Cardigans",
+  inputBandName: "",
+};
 
 export default function NewGame({ navigation }: { navigation: any }) {
   const [roundStarted, setRoundStarted] = useState(false);
   const [currentBandName, setCurrentBandName] = useState("The Cardigans");
   const [inputBandName, setInputBandName] = useState("");
 
+  const [gameData, setGameData] = useState<GameData>(initialGameData);
+
   const handleSetRoundStarted = () => {
     setRoundStarted(true);
   };
 
-  const checkValidBandNameAndChange = () => {
-    if (
-      currentBandName[currentBandName.length - 1].toLowerCase() ===
-      inputBandName[0].toLowerCase()
-    ) {
-      setCurrentBandName(inputBandName);
-      setInputBandName("");
-
-      console.log("Valid band name");
-    } else {
-      console.log("Invalid band name");
-    }
+  const handleAddNewBand = (
+    bandName: string,
+    player: "player1" | "player2"
+  ) => {
+    setGameData((prev) => {
+      return {
+        ...prev,
+        bands: [...prev.bands, { name: bandName, guesser: player }],
+        currentBandName: bandName,
+      };
+    });
   };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
       <GameHeader navigation={navigation} roundStarted={roundStarted} />
-      <GameContent
-        currentBandName={currentBandName}
-        inputBandName={inputBandName}
-      />
+      <GameContent inputBandName={inputBandName} gameData={gameData} />
       {roundStarted ? (
         <ChatInput
           setInputBandName={setInputBandName}
-          checkValidBandNameAndChange={checkValidBandNameAndChange}
+          inputBandName={inputBandName}
+          gameData={gameData}
+          handleAddNewBand={handleAddNewBand}
         />
       ) : (
         <StartRoundButton setRoundStarted={handleSetRoundStarted} />

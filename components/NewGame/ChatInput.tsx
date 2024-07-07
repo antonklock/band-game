@@ -1,23 +1,53 @@
-import React from "react";
+import { useRef } from "react";
 import {
   TextInput,
   View,
   StyleSheet,
   TouchableOpacity,
   Text,
-  Keyboard,
 } from "react-native";
+import { GameData } from "../../types";
 
 type ChatInputProps = {
+  gameData: GameData;
   setInputBandName: (inputBandName: string) => void;
-  checkValidBandNameAndChange: () => void;
+  inputBandName: string;
+  handleAddNewBand: (bandName: string, player: "player1" | "player2") => void;
 };
 
 const ChatInput = (props: ChatInputProps) => {
-  const { setInputBandName, checkValidBandNameAndChange } = props;
+  const { setInputBandName, inputBandName, gameData, handleAddNewBand } = props;
+
+  const inputRef = useRef<TextInput>(null);
+
+  const isValidBandName = (bandName: string) => {
+    const currentBandName = gameData.currentBandName;
+    const currentBandNameLength = currentBandName.length;
+    if (bandName.length === 0) return false;
+    if (
+      currentBandName[currentBandNameLength - 1].toLowerCase() ===
+      bandName[0].toLowerCase()
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const handleNewGuess = (guessBandName: string) => {
+    if (!isValidBandName(guessBandName))
+      return console.log("Invalid band name");
+    else console.log("Valid band name");
+
+    const player = "player1";
+    handleAddNewBand(guessBandName, player);
+    inputRef.current?.clear();
+  };
+
   return (
     <View style={styles.inputView}>
       <TextInput
+        ref={inputRef}
         autoFocus={true}
         style={styles.textInput}
         placeholder="Enter band name"
@@ -26,7 +56,7 @@ const ChatInput = (props: ChatInputProps) => {
       <TouchableOpacity
         style={styles.submitButton}
         onPress={() => {
-          checkValidBandNameAndChange();
+          handleNewGuess(inputBandName);
         }}
       >
         <Text style={styles.text}>Submit</Text>

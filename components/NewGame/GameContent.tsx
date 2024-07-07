@@ -1,16 +1,27 @@
+import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { GameData } from "../../types";
 
 type GameContentProps = {
-  currentBandName: string;
   inputBandName: string;
+  gameData: GameData;
 };
 
 const GameContent = (props: GameContentProps) => {
-  const { currentBandName, inputBandName } = props;
+  const { inputBandName, gameData } = props;
   return (
     <View style={styles.gameContent}>
-      <Text style={styles.text}>Band name</Text>
-      <Text style={styles.text}>{currentBandName}</Text>
+      <Text style={styles.text}>Band name list</Text>
+      {gameData.bands.map((band, index) => {
+        return (
+          <Text style={styles.text} key={index}>
+            {band.name}
+          </Text>
+        );
+      })}
+      <Text style={{ ...styles.text, marginTop: 20 }}>Current Band name</Text>
+      <Text style={styles.text}>{gameData.currentBandName}</Text>
+      <Text style={{ ...styles.text, marginTop: 20 }}>Your guess</Text>
       <Text style={styles.text}>{inputBandName}</Text>
     </View>
   );

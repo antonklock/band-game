@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import { useState } from "react";
 import StartRoundButton from "./StartRoundButton";
@@ -18,38 +18,62 @@ const initialGameData: GameData = {
       score: 0,
     },
   },
-  bands: [
-    {
-      name: "The Cardigans",
-      guesser: "player1",
-    },
-  ],
-  currentBandName: "The Cardigans",
+  bands: [],
+  currentBandName: "",
   inputBandName: "",
+  gameStarted: false,
 };
 
+const DebugBandNames = [
+  "The Cardigans",
+  "Snoop Dogg",
+  "The Who",
+  "Pink Floyd",
+  "K's Choice",
+  "Amason",
+];
+
 export default function NewGame({ navigation }: { navigation: any }) {
-  const [roundStarted, setRoundStarted] = useState(false);
-  const [currentBandName, setCurrentBandName] = useState("The Cardigans");
+  // DEBUG: Add a random band name to the game
+  useEffect(() => {
+    const randomBandName =
+      DebugBandNames[Math.floor(Math.random() * DebugBandNames.length)];
+    handleAddNewBand(randomBandName, "player2");
+  }, []);
+
   const [inputBandName, setInputBandName] = useState("");
 
   const [gameData, setGameData] = useState<GameData>(initialGameData);
 
   const handleSetRoundStarted = () => {
-    setRoundStarted(true);
+    setGameData((prev) => {
+      return {
+        ...prev,
+        gameStarted: true,
+      };
+    });
   };
 
   const handleAddNewBand = (
     bandName: string,
     player: "player1" | "player2"
   ) => {
+    bandName = bandName.trim();
     setGameData((prev) => {
       return {
         ...prev,
         bands: [...prev.bands, { name: bandName, guesser: player }],
         currentBandName: bandName,
+        gameStarted: false,
       };
     });
+  };
+
+  const isWaitingOnOpponent = () => {
+    if (gameData.bands.length === 0) return false;
+    const lastBand = gameData.bands[gameData.bands.length - 1];
+    if (lastBand.guesser === "player2") return false;
+    return true;
   };
 
   return (
@@ -57,9 +81,9 @@ export default function NewGame({ navigation }: { navigation: any }) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <GameHeader navigation={navigation} roundStarted={roundStarted} />
+      <GameHeader navigation={navigation} roundStarted={gameData.gameStarted} />
       <GameContent inputBandName={inputBandName} gameData={gameData} />
-      {roundStarted ? (
+      {gameData.gameStarted ? (
         <ChatInput
           setInputBandName={setInputBandName}
           inputBandName={inputBandName}
@@ -67,7 +91,10 @@ export default function NewGame({ navigation }: { navigation: any }) {
           handleAddNewBand={handleAddNewBand}
         />
       ) : (
-        <StartRoundButton setRoundStarted={handleSetRoundStarted} />
+        <StartRoundButton
+          waiting={isWaitingOnOpponent()}
+          setRoundStarted={handleSetRoundStarted}
+        />
       )}
     </KeyboardAvoidingView>
   );
@@ -145,3 +172,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 });
+function useEffects(arg0: () => void) {
+  throw new Error("Function not implemented.");
+}

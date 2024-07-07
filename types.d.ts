@@ -15,6 +15,7 @@ interface GameData {
     }[];
     currentBandName: string;
     inputBandName: string;
+    gameStarted: boolean;
 }
 
 export { GameData };

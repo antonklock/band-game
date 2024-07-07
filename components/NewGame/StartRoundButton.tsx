@@ -2,21 +2,32 @@ import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 
 type StartRoundButtonProps = {
   setRoundStarted: (roundStarted: boolean) => void;
+  waiting: boolean;
 };
 
 export default function StartRoundButton(props: StartRoundButtonProps) {
-  const { setRoundStarted } = props;
+  const { setRoundStarted, waiting } = props;
   return (
-    <View style={styles.readyButtonView}>
-      <TouchableOpacity
-        style={styles.submitButton}
-        onPress={() => {
-          setRoundStarted(true);
-        }}
-      >
-        <Text style={styles.text}>Start round</Text>
-      </TouchableOpacity>
-    </View>
+    <>
+      {waiting ? (
+        <View style={styles.readyButtonView}>
+          <TouchableOpacity style={styles.waitingButton} disabled={true}>
+            <Text style={styles.text}>Waiting for opponent to answer...</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.readyButtonView}>
+          <TouchableOpacity
+            style={styles.startButton}
+            onPress={() => {
+              setRoundStarted(true);
+            }}
+          >
+            <Text style={styles.text}>Start round</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </>
   );
 }
 
@@ -28,8 +39,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingBottom: 40,
   },
-  submitButton: {
+  startButton: {
     backgroundColor: "#50ab64",
+    borderRadius: 10,
+    height: 40,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+    marginHorizontal: 30,
+  },
+  waitingButton: {
+    backgroundColor: "darkgrey",
     borderRadius: 10,
     height: 40,
     display: "flex",

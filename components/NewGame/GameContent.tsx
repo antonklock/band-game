@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { GameData } from "../../types";
+import Message from "./Chat/Message";
 
 type GameContentProps = {
   inputBandName: string;
@@ -8,21 +9,34 @@ type GameContentProps = {
 };
 
 const GameContent = (props: GameContentProps) => {
-  const { inputBandName, gameData } = props;
+  const { gameData } = props;
   return (
     <View style={styles.gameContent}>
-      <Text style={styles.text}>Band name list</Text>
-      {gameData.bands.map((band, index) => {
-        return (
-          <Text style={styles.text} key={index}>
-            {band.name}
-          </Text>
-        );
-      })}
-      <Text style={{ ...styles.text, marginTop: 20 }}>Current Band name</Text>
-      <Text style={styles.text}>{gameData.currentBandName}</Text>
-      <Text style={{ ...styles.text, marginTop: 20 }}>Your guess</Text>
-      <Text style={styles.text}>{inputBandName}</Text>
+      <View style={styles.chatArea}>
+        {gameData.bands.map((band, index) => {
+          return (
+            <>
+              {index === gameData.bands.length - 1 && (
+                <Text
+                  style={{
+                    ...styles.latestGuessText,
+                    alignSelf:
+                      band.guesser === "player1" ? "flex-end" : "flex-start",
+                  }}
+                >
+                  This is the latest entry
+                </Text>
+              )}
+              <Message
+                hidden={!gameData.gameStarted}
+                key={index}
+                message={band.name}
+                guesser={band.guesser}
+              />
+            </>
+          );
+        })}
+      </View>
     </View>
   );
 };
@@ -30,6 +44,16 @@ const GameContent = (props: GameContentProps) => {
 export default GameContent;
 
 const styles = StyleSheet.create({
+  chatArea: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    justifyContent: "flex-end",
+    overflow: "scroll",
+    width: "100%",
+    // backgroundColor: "lightblue",
+    flex: 1,
+  },
   gameContent: {
     display: "flex",
     flexDirection: "column",
@@ -43,5 +67,10 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "white",
+  },
+  latestGuessText: {
+    color: "lightgrey",
+    fontSize: 9,
+    paddingHorizontal: 20,
   },
 });

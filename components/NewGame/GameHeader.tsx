@@ -21,16 +21,20 @@ const GameHeader = (props: GameHeaderProps) => {
           <Text style={styles.text}>Opponent</Text>
         </View>
       </View>
-      <View style={styles.navBar}>
-        <Button
-          title="Home"
-          onPress={() => {
-            navigation.navigate("Home");
-          }}
-        />
-      </View>
-      <Text style={styles.text}>Countdown</Text>
-      <CountDown roundStarted={roundStarted} countdownTime={20} />
+      {roundStarted && (
+        <>
+          <View style={styles.navBar}>
+            <Button
+              title="Home"
+              onPress={() => {
+                navigation.navigate("Home");
+              }}
+            />
+          </View>
+          <Text style={styles.text}>Countdown</Text>
+          <CountDown roundStarted={roundStarted} countdownTime={20} />
+        </>
+      )}
     </View>
   );
 };

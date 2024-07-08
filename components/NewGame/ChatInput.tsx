@@ -42,6 +42,7 @@ const ChatInput = (props: ChatInputProps) => {
     const player = "player1";
     handleAddNewBand(guessBandName, player);
     inputRef.current?.clear();
+    inputRef.current?.blur();
   };
 
   return (

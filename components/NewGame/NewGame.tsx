@@ -82,6 +82,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
       style={styles.container}
     >
       <GameHeader navigation={navigation} roundStarted={gameData.gameStarted} />
+
       <GameContent inputBandName={inputBandName} gameData={gameData} />
       {gameData.gameStarted ? (
         <ChatInput
@@ -92,6 +93,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
         />
       ) : (
         <StartRoundButton
+          navigation={navigation}
           waiting={isWaitingOnOpponent()}
           setRoundStarted={handleSetRoundStarted}
         />

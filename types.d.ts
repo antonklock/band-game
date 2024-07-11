@@ -1,17 +1,21 @@
 interface GameData {
     players: {
-        player1: {
+        player: {
+            id: string;
             name: string;
             score: number;
+            strikes: 0 | 1 | 2 | 3;
         };
-        player2: {
+        opponent: {
+            id: string;
             name: string;
             score: number;
+            strikes: 0 | 1 | 2 | 3;
         };
     };
     bands: {
         name: string;
-        guesser: "player1" | "player2";
+        guesser: "player" | "opponent";
     }[];
     currentBandName: string;
     inputBandName: string;

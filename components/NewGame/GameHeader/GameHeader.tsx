@@ -1,26 +1,20 @@
 import { Button, Text, View, StyleSheet } from "react-native";
 import CountDown from "./CountDown";
+import VersusBar from "./VersusBar";
+import { GameData } from "../../../types";
 
 type GameHeaderProps = {
   navigation: any;
   roundStarted: boolean;
+  gameData: GameData;
 };
 
 const GameHeader = (props: GameHeaderProps) => {
-  const { navigation, roundStarted } = props;
+  const { navigation, roundStarted, gameData } = props;
+
   return (
     <View style={styles.gameHeader}>
-      <View style={styles.versusBar}>
-        <View style={styles.versusView}>
-          <Text style={styles.text}>You</Text>
-        </View>
-        <View style={styles.versusView}>
-          <Text style={styles.text}>VS.</Text>
-        </View>
-        <View style={styles.versusView}>
-          <Text style={styles.text}>Opponent</Text>
-        </View>
-      </View>
+      <VersusBar players={gameData.players} />
       {roundStarted && (
         <>
           <View style={styles.navBar}>
@@ -49,19 +43,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 40,
     marginHorizontal: 20,
-  },
-  versusBar: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
-    marginBottom: 10,
-  },
-  versusView: {
-    display: "flex",
-    alignItems: "center",
-    flex: 1,
   },
   heading: {
     fontSize: 24,

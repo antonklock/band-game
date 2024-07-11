@@ -1,7 +1,7 @@
 import { View, StyleSheet } from "react-native";
 
 type MessageProps = {
-  guesser: "player1" | "player2";
+  guesser: "player" | "opponent";
   message: string;
   hidden: boolean;
 };
@@ -13,7 +13,7 @@ const Message = (props: MessageProps) => {
   const { guesser, message, hidden } = props;
   return (
     <View style={styles.messageView}>
-      {guesser === "player1" ? (
+      {guesser === "player" ? (
         <PlayerMessage message={message} />
       ) : (
         <OpponentMessage hidden={hidden} message={message} />

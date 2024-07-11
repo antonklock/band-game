@@ -4,18 +4,23 @@ import { useState } from "react";
 import StartRoundButton from "./StartRoundButton";
 import ChatInput from "./ChatInput";
 import GameContent from "./GameContent";
-import GameHeader from "./GameHeader";
+import GameHeader from "./GameHeader/GameHeader";
 import { GameData } from "../../types";
+import { getAiResponse } from "../../utils/GameAI/GameAiPlayer";
 
 const initialGameData: GameData = {
   players: {
-    player1: {
+    player: {
+      id: "player-id", // TODO: Replace with "player-id"
       name: "Player 1",
       score: 0,
+      strikes: 0,
     },
-    player2: {
+    opponent: {
+      id: "opponent-id", // TODO: Replace with "opponent-id
       name: "Player 2",
       score: 0,
+      strikes: 0,
     },
   },
   bands: [],
@@ -34,16 +39,30 @@ const DebugBandNames = [
 ];
 
 export default function NewGame({ navigation }: { navigation: any }) {
-  // DEBUG: Add a random band name to the game
+  // DEBUG: Adding first message - A random band name
   useEffect(() => {
     const randomBandName =
       DebugBandNames[Math.floor(Math.random() * DebugBandNames.length)];
-    handleAddNewBand(randomBandName, "player2");
+    handleAddNewBand(randomBandName, "opponent");
   }, []);
 
   const [inputBandName, setInputBandName] = useState("");
 
   const [gameData, setGameData] = useState<GameData>(initialGameData);
+
+  useEffect(() => {
+    if (gameData.bands.length === 0) return;
+    const lastBand = gameData.bands[gameData.bands.length - 1];
+    if (lastBand.guesser === "player") {
+      const randomTimeoutTime = Math.floor(Math.random() * 6000) + 1000;
+      setTimeout(() => {
+        const newBand = getAiResponse(gameData);
+
+        if (!newBand) return;
+        handleAddNewBand(newBand, "opponent");
+      }, randomTimeoutTime);
+    }
+  }, [gameData.bands]);
 
   const handleSetRoundStarted = () => {
     setGameData((prev) => {
@@ -56,7 +75,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
 
   const handleAddNewBand = (
     bandName: string,
-    player: "player1" | "player2"
+    player: "player" | "opponent"
   ) => {
     bandName = bandName.trim();
     setGameData((prev) => {
@@ -72,7 +91,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
   const isWaitingOnOpponent = () => {
     if (gameData.bands.length === 0) return false;
     const lastBand = gameData.bands[gameData.bands.length - 1];
-    if (lastBand.guesser === "player2") return false;
+    if (lastBand.guesser === "opponent") return false;
     return true;
   };
 
@@ -81,7 +100,11 @@ export default function NewGame({ navigation }: { navigation: any }) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <GameHeader navigation={navigation} roundStarted={gameData.gameStarted} />
+      <GameHeader
+        navigation={navigation}
+        roundStarted={gameData.gameStarted}
+        gameData={gameData}
+      />
 
       <GameContent inputBandName={inputBandName} gameData={gameData} />
       {gameData.gameStarted ? (
@@ -121,17 +144,6 @@ const styles = StyleSheet.create({
     gap: 4,
     alignItems: "center",
     paddingTop: 40,
-  },
-  gameContent: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#141414",
-    width: "95%",
-    flex: 1,
-    marginVertical: 20,
-    borderRadius: 10,
   },
   text: {
     color: "white",
@@ -174,6 +186,3 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 });
-function useEffects(arg0: () => void) {
-  throw new Error("Function not implemented.");
-}

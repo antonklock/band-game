@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { View, Text, StyleSheet, ScrollView, Keyboard } from "react-native";
 import { GameData } from "../../types";
 import Message from "./Chat/Message";
 
@@ -10,33 +10,58 @@ type GameContentProps = {
 
 const GameContent = (props: GameContentProps) => {
   const { gameData } = props;
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true });
+    }
+  }, [gameData.bands]);
+
+  // Move scroll view to the end when keyboard is shown or hidden
+  useEffect(() => {
+    const keyboardShow = Keyboard.addListener("keyboardDidShow", () => {
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollToEnd({ animated: true });
+      }
+    });
+
+    const keyboardHide = Keyboard.addListener("keyboardDidHide", () => {
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollToEnd({ animated: true });
+      }
+    });
+
+    return () => {
+      keyboardShow.remove();
+      keyboardHide.remove();
+    };
+  }, []);
+
   return (
     <View style={styles.gameContent}>
-      <View style={styles.chatArea}>
+      <ScrollView ref={scrollViewRef} contentContainerStyle={styles.chatArea}>
         {gameData.bands.map((band, index) => {
           return (
-            <>
-              {index === gameData.bands.length - 1 && (
-                <Text
-                  style={{
-                    ...styles.latestGuessText,
-                    alignSelf:
-                      band.guesser === "player1" ? "flex-end" : "flex-start",
-                  }}
-                >
-                  This is the latest entry
-                </Text>
-              )}
+            <View style={{ width: "100%" }}>
+              {index === gameData.bands.length - 1 &&
+                band.guesser === "opponent" && (
+                  <Text style={styles.latestGuessText}>
+                    Start round to see last message
+                  </Text>
+                )}
               <Message
-                hidden={!gameData.gameStarted}
+                hidden={
+                  !gameData.gameStarted && index === gameData.bands.length - 1
+                }
                 key={index}
                 message={band.name}
                 guesser={band.guesser}
               />
-            </>
+            </View>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -52,12 +77,12 @@ const styles = StyleSheet.create({
     overflow: "scroll",
     width: "100%",
     // backgroundColor: "lightblue",
-    flex: 1,
+    flexGrow: 1,
   },
   gameContent: {
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
+    // alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#141414",
     width: "95%",
@@ -72,5 +97,6 @@ const styles = StyleSheet.create({
     color: "lightgrey",
     fontSize: 9,
     paddingHorizontal: 20,
+    alignSelf: "flex-start",
   },
 });

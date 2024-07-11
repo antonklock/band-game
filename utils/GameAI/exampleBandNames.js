@@ -1,0 +1,30 @@
+const bands = {
+  "A": ["AC/DC", "Aerosmith", "Arctic Monkeys", "Arcade Fire"],
+  "B": ["Beatles", "Bee Gees", "Black Sabbath", "Blur"],
+  "C": ["Coldplay", "Creedence Clearwater Revival", "Chicago", "Clash"],
+  "D": ["Doors", "Depeche Mode", "Def Leppard", "Duran Duran"],
+  "E": ["Eagles", "Evanescence", "Earth, Wind & Fire", "Eurythmics"],
+  "F": ["Fleetwood Mac", "Foo Fighters", "Franz Ferdinand", "Fall Out Boy"],
+  "G": ["Guns N' Roses", "Green Day", "Genesis", "Gorillaz"],
+  "H": ["Heart", "Hollies", "Hootie & the Blowfish", "Hate Eternal"],
+  "I": ["INXS", "Imagine Dragons", "Iron Maiden", "Incubus"],
+  "J": ["Journey", "Judas Priest", "Jethro Tull", "Jackson 5"],
+  "K": ["KISS", "Kings of Leon", "Korn", "Killers"],
+  "L": ["Led Zeppelin", "Linkin Park", "Lynyrd Skynyrd", "Loverboy"],
+  "M": ["Metallica", "Muse", "Motley Crue", "Mumford & Sons"],
+  "N": ["Nirvana", "Nine Inch Nails", "Nickelback", "New Order"],
+  "O": ["Oasis", "Offspring", "Our Lady Peace", "Opeth"],
+  "P": ["Pink Floyd", "Pearl Jam", "Pixies", "Pantera"],
+  "Q": ["Queen", "Queensryche", "Quiet Riot", "Quavo"],
+  "R": ["Red Hot Chili Peppers", "Radiohead", "Rush", "Rammstein"],
+  "S": ["Scorpions", "Smashing Pumpkins", "Strokes", "Slayer"],
+  "T": ["The Who", "Tool", "Talking Heads", "Toto"],
+  "U": ["U2", "Uriah Heep", "Uncle Kracker", "Unleashed"],
+  "V": ["Van Halen", "Velvet Underground", "Verve", "Venom"],
+  "W": ["Weezer", "White Stripes", "Whitesnake", "Wolfmother"],
+  "X": ["X", "XTC", "X-Ray Spex", "X Japan"],
+  "Y": ["Yes", "Yardbirds", "Yellowcard", "Yanni"],
+  "Z": ["ZZ Top", "Zombies", "Zac Brown Band", "Zedd"]
+};
+
+export {bands};

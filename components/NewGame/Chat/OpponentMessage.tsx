@@ -12,7 +12,11 @@ const OpponentMessage = (props: OpponentMessageProps) => {
       {hidden ? (
         <View style={styles.messagePosition}>
           <View style={styles.messageView}>
-            <Text style={styles.text}>Start round to see last message</Text>
+            <View style={styles.writingMessage}>
+              <View style={styles.dot} />
+              <View style={styles.dot} />
+              <View style={styles.dot} />
+            </View>
           </View>
         </View>
       ) : (
@@ -29,6 +33,18 @@ const OpponentMessage = (props: OpponentMessageProps) => {
 export default OpponentMessage;
 
 const styles = StyleSheet.create({
+  writingMessage: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    gap: 4,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    backgroundColor: "darkgreen",
+    borderRadius: 50,
+  },
   messagePosition: {
     display: "flex",
     flexDirection: "row",

@@ -12,7 +12,7 @@ type ChatInputProps = {
   gameData: GameData;
   setInputBandName: (inputBandName: string) => void;
   inputBandName: string;
-  handleAddNewBand: (bandName: string, player: "player1" | "player2") => void;
+  handleAddNewBand: (bandName: string, player: "player" | "opponent") => void;
 };
 
 const ChatInput = (props: ChatInputProps) => {
@@ -20,10 +20,17 @@ const ChatInput = (props: ChatInputProps) => {
 
   const inputRef = useRef<TextInput>(null);
 
+  // Validate band name
   const isValidBandName = (bandName: string) => {
     const currentBandName = gameData.currentBandName;
     const currentBandNameLength = currentBandName.length;
     if (bandName.length === 0) return false;
+
+    // If the band name starts with "the", remove it
+    if (bandName.substring(0, 3).toLowerCase() === "the") {
+      bandName = removeWord("the", bandName).trim().toLowerCase();
+    }
+
     if (
       currentBandName[currentBandNameLength - 1].toLowerCase() ===
       bandName[0].toLowerCase()
@@ -34,15 +41,58 @@ const ChatInput = (props: ChatInputProps) => {
     }
   };
 
+  const removeWord = (wordToRemove: string, bandName: string) => {
+    if (
+      bandName.substring(0, wordToRemove.length).toLowerCase() === wordToRemove
+    ) {
+      bandName = bandName.substring(3, bandName.length);
+    }
+    return bandName;
+  };
+
   const handleNewGuess = (guessBandName: string) => {
-    if (!isValidBandName(guessBandName))
-      return console.log("Invalid band name");
+    if (!isValidBandName(guessBandName)) return handleInvalidGuess();
     else console.log("Valid band name");
 
-    const player = "player1";
+    const player = "player";
+
+    // Each first letter is capitalized
+    guessBandName = guessBandName
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
     handleAddNewBand(guessBandName, player);
     inputRef.current?.clear();
     inputRef.current?.blur();
+
+    setInputBandName("");
+  };
+
+  const handleSetInputBandName = (inputBandName: string) => {
+    setInputBandName(inputBandName);
+  };
+
+  const handleInvalidGuess = () => {
+    console.log("Invalid guess");
+    inputRef.current?.setNativeProps({
+      style: {
+        ...styles.textInput,
+        borderColor: "red",
+        borderWidth: 2,
+        color: "red",
+      },
+    });
+    setTimeout(() => {
+      inputRef.current?.setNativeProps({
+        style: {
+          ...styles.textInput,
+          borderColor: "black",
+          borderWidth: 0,
+          color: "black",
+        },
+      });
+    }, 2000);
   };
 
   return (
@@ -52,7 +102,8 @@ const ChatInput = (props: ChatInputProps) => {
         autoFocus={true}
         style={styles.textInput}
         placeholder="Enter band name"
-        onChangeText={setInputBandName}
+        onChangeText={(text) => handleSetInputBandName(text)}
+        value={inputBandName}
       ></TextInput>
       <TouchableOpacity
         style={styles.submitButton}

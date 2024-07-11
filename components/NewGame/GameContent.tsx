@@ -46,7 +46,7 @@ const GameContent = (props: GameContentProps) => {
             <View style={{ width: "100%" }}>
               {index === gameData.bands.length - 1 &&
                 band.guesser === "opponent" && (
-                  <Text style={styles.latestGuessText}>
+                  <Text key={index + "_text"} style={styles.latestGuessText}>
                     Start round to see last message
                   </Text>
                 )}

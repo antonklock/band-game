@@ -100,11 +100,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <GameHeader
-        navigation={navigation}
-        roundStarted={gameData.gameStarted}
-        gameData={gameData}
-      />
+      <GameHeader navigation={navigation} gameData={gameData} />
 
       <GameContent inputBandName={inputBandName} gameData={gameData} />
       {gameData.gameStarted ? (

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
-import { View, Text, StyleSheet, ScrollView, Keyboard } from "react-native";
+import { View, StyleSheet, ScrollView, Keyboard } from "react-native";
 import { GameData } from "../../types";
-import Message from "./Chat/Message";
+import ChatArea from "./Chat/ChatArea";
 
 type GameContentProps = {
   inputBandName: string;
@@ -12,22 +12,25 @@ const GameContent = (props: GameContentProps) => {
   const { gameData } = props;
   const scrollViewRef = useRef<ScrollView>(null);
 
+  // Scroll to the end of the chat when a new message is added
   useEffect(() => {
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollToEnd({ animated: true });
     }
   }, [gameData.bands]);
 
-  // Move scroll view to the end when keyboard is shown or hidden
+  // Add listeners for keyboard show and hide
   useEffect(() => {
     const keyboardShow = Keyboard.addListener("keyboardDidShow", () => {
       if (scrollViewRef.current) {
+        // Move scroll view to the end when keyboard is shown or hidden
         scrollViewRef.current.scrollToEnd({ animated: true });
       }
     });
 
     const keyboardHide = Keyboard.addListener("keyboardDidHide", () => {
       if (scrollViewRef.current) {
+        // Move scroll view to the end when keyboard is shown or hidden
         scrollViewRef.current.scrollToEnd({ animated: true });
       }
     });
@@ -40,28 +43,7 @@ const GameContent = (props: GameContentProps) => {
 
   return (
     <View style={styles.gameContent}>
-      <ScrollView ref={scrollViewRef} contentContainerStyle={styles.chatArea}>
-        {gameData.bands.map((band, index) => {
-          return (
-            <View style={{ width: "100%" }}>
-              {index === gameData.bands.length - 1 &&
-                band.guesser === "opponent" && (
-                  <Text key={index + "_text"} style={styles.latestGuessText}>
-                    Start round to see last message
-                  </Text>
-                )}
-              <Message
-                hidden={
-                  !gameData.gameStarted && index === gameData.bands.length - 1
-                }
-                key={index}
-                message={band.name}
-                guesser={band.guesser}
-              />
-            </View>
-          );
-        })}
-      </ScrollView>
+      <ChatArea gameData={gameData} />
     </View>
   );
 };
@@ -69,20 +51,9 @@ const GameContent = (props: GameContentProps) => {
 export default GameContent;
 
 const styles = StyleSheet.create({
-  chatArea: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-    justifyContent: "flex-end",
-    overflow: "scroll",
-    width: "100%",
-    // backgroundColor: "lightblue",
-    flexGrow: 1,
-  },
   gameContent: {
     display: "flex",
     flexDirection: "column",
-    // alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#141414",
     width: "95%",
@@ -92,11 +63,5 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "white",
-  },
-  latestGuessText: {
-    color: "lightgrey",
-    fontSize: 9,
-    paddingHorizontal: 20,
-    alignSelf: "flex-start",
   },
 });

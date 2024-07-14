@@ -5,12 +5,12 @@ import { GameData } from "../../../types";
 
 type GameHeaderProps = {
   navigation: any;
-  roundStarted: boolean;
   gameData: GameData;
 };
 
 const GameHeader = (props: GameHeaderProps) => {
-  const { navigation, roundStarted, gameData } = props;
+  const { navigation, gameData } = props;
+  const roundStarted = gameData.gameStarted;
 
   return (
     <View style={styles.gameHeader}>

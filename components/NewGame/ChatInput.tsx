@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   TextInput,
   View,
@@ -19,6 +19,49 @@ const ChatInput = (props: ChatInputProps) => {
   const { setInputBandName, inputBandName, gameData, handleAddNewBand } = props;
 
   const inputRef = useRef<TextInput>(null);
+  const [theWord, setTheWord] = useState("");
+  const [currentGuess, setCurrentGuess] = useState("");
+  const [isCorrectLetter, setIsCorrectLetter] = useState(false);
+
+  const startsWithThe = (inputString: string) => {
+    const lowercaseInput = inputString.toLowerCase();
+    return (
+      lowercaseInput.startsWith("t") ||
+      lowercaseInput.startsWith("th") ||
+      lowercaseInput.startsWith("the") ||
+      lowercaseInput.startsWith("the ")
+    );
+  };
+
+  useEffect(() => {
+    const currentBandNameLastLetter =
+      gameData.currentBandName[
+        gameData.currentBandName.length - 1
+      ].toLowerCase();
+    if (startsWithThe(inputBandName)) {
+      if (inputBandName.length >= 3) {
+        if (
+          inputBandName.substring(3, 5).toLowerCase() ===
+          " " + currentBandNameLastLetter
+        ) {
+          setIsCorrectLetter(true);
+          setTheWord(inputBandName.substring(0, 3));
+          setCurrentGuess(inputBandName.substring(3, inputBandName.length));
+        } else {
+          setIsCorrectLetter(false);
+          setTheWord(inputBandName.substring(0, 3));
+          setCurrentGuess(inputBandName.substring(3, inputBandName.length));
+        }
+      } else {
+        setIsCorrectLetter(false);
+        setTheWord(inputBandName);
+        setCurrentGuess("");
+      }
+    } else {
+      setTheWord("");
+      setCurrentGuess(inputBandName);
+    }
+  }, [inputBandName]);
 
   // Validate band name
   const isValidBandName = (bandName: string) => {
@@ -95,16 +138,52 @@ const ChatInput = (props: ChatInputProps) => {
     }, 2000);
   };
 
+  const styleWordThe = (inputBandName: string) => {
+    if (!inputBandName) return { color: "black" };
+    const currentBandNameLength = gameData.currentBandName.length;
+    const currentBandNameLastLetter =
+      gameData.currentBandName[currentBandNameLength - 1].toLowerCase();
+    const inputBandNameFirstLetter = inputBandName[0].toLowerCase();
+
+    console.log("currentBandNameLastLetter", currentBandNameLastLetter);
+    console.log("inputBandNameFirstLetter", inputBandNameFirstLetter);
+
+    if (inputBandNameFirstLetter === "T" || inputBandNameFirstLetter === "t") {
+      return { color: "gray" };
+    } else if (inputBandNameFirstLetter != currentBandNameLastLetter) {
+      return { color: "red" };
+    } else {
+      return { color: "green" };
+    }
+  };
+
   return (
     <View style={styles.inputView}>
       <TextInput
         ref={inputRef}
         autoFocus={true}
-        style={styles.textInput}
+        style={{ ...styles.textInput, ...styleWordThe(inputBandName) }}
         placeholder="Enter band name"
         onChangeText={(text) => handleSetInputBandName(text)}
-        value={inputBandName}
-      ></TextInput>
+      >
+        {theWord ? (
+          <>
+            {isCorrectLetter ? (
+              <>
+                <Text style={{ color: "gray" }}>{theWord}</Text>
+                <Text style={{ color: "green" }}>{currentGuess}</Text>
+              </>
+            ) : (
+              <>
+                <Text style={{ color: "gray" }}>{theWord}</Text>
+                <Text style={{ color: "red" }}>{currentGuess}</Text>
+              </>
+            )}
+          </>
+        ) : (
+          <Text>{inputBandName}</Text>
+        )}
+      </TextInput>
       <TouchableOpacity
         style={styles.submitButton}
         onPress={() => {

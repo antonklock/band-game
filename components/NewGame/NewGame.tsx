@@ -2,11 +2,12 @@ import React, { useEffect } from "react";
 import { StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import { useState } from "react";
 import StartRoundButton from "./StartRoundButton";
-import ChatInput from "./ChatInput";
+import ChatInput from "./ChatInput/ChatInput";
 import GameContent from "./GameContent";
 import GameHeader from "./GameHeader/GameHeader";
 import { GameData } from "../../types";
 import { getAiResponse } from "../../utils/GameAI/GameAiPlayer";
+import { searchLastFM } from "../../api/lastFM/lastFM";
 
 const initialGameData: GameData = {
   players: {
@@ -55,12 +56,46 @@ export default function NewGame({ navigation }: { navigation: any }) {
     const lastBand = gameData.bands[gameData.bands.length - 1];
     if (lastBand.guesser === "player") {
       const randomTimeoutTime = Math.floor(Math.random() * 6000) + 1000;
-      setTimeout(() => {
-        const newBand = getAiResponse(gameData);
 
-        if (!newBand) return;
-        handleAddNewBand(newBand, "opponent");
+      const fetchAndAddBand = async () => {
+        try {
+          const lastLetter = gameData.currentBandName.slice(-1);
+          const searchResults = await searchLastFM(lastLetter);
+
+          let newBand = "";
+          for (
+            let i = Math.floor(Math.random() * searchResults.length);
+            i < searchResults.length;
+            i++
+          ) {
+            if (searchResults[i][0] === lastLetter) {
+              newBand = searchResults[i];
+
+              newBand = newBand
+                .split(" ")
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ");
+
+              console.log("New band: ", newBand);
+
+              handleAddNewBand(newBand, "opponent");
+              break;
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch new band", error);
+        }
+      };
+
+      const timeoutId = setTimeout(() => {
+        if (gameData.currentBandName) {
+          return fetchAndAddBand();
+        } else {
+          return getAiResponse(gameData);
+        }
       }, randomTimeoutTime);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [gameData.bands]);
 

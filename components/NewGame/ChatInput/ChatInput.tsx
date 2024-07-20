@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   Text,
 } from "react-native";
-import { GameData } from "../../types";
-import { searchLastFM } from "../../api/lastFM/lastFM";
+import { GameData } from "../../../types";
+import { isValidBandName } from "./isValidBandName";
 
 type ChatInputProps = {
   gameData: GameData;
@@ -31,12 +31,12 @@ const ChatInput = (props: ChatInputProps) => {
   const [currentGuess, setCurrentGuess] = useState("");
   const [isCorrectLetter, setIsCorrectLetter] = useState(false);
 
-  const startsWithThe = (inputString: string) => {
-    const lowercaseInput = inputString.toLowerCase();
+  const startsWithThe = (inputString: string): boolean => {
+    const lowercaseInput = inputString.toLowerCase().trim();
     return (
-      lowercaseInput.startsWith("t") ||
-      lowercaseInput.startsWith("th") ||
-      lowercaseInput.startsWith("the") ||
+      lowercaseInput === "t" ||
+      lowercaseInput === "th" ||
+      lowercaseInput === "the" ||
       lowercaseInput.startsWith("the ")
     );
   };
@@ -46,6 +46,7 @@ const ChatInput = (props: ChatInputProps) => {
       gameData.currentBandName[
         gameData.currentBandName.length - 1
       ].toLowerCase();
+
     if (startsWithThe(inputBandName)) {
       if (inputBandName.length >= 3) {
         if (
@@ -71,109 +72,11 @@ const ChatInput = (props: ChatInputProps) => {
     }
   }, [inputBandName]);
 
-  // Validate band name
-  const isValidBandName = async (bandName: string) => {
-    const currentBandName = gameData.currentBandName.trim().toLowerCase();
-    const currentBandNameLength = currentBandName.length;
-    if (bandName.length === 0) return false;
-    bandName = bandName.trim().toLowerCase();
-
-    // If the input name starts with "the" and currentBandName doesn't end with t, remove 'the'
-    const inputStartsWithThe = bandName.substring(0, 3) === "the";
-    const currentEndsWithT =
-      currentBandName[currentBandNameLength - 1] === "t" ||
-      currentBandName[currentBandNameLength - 1] === "T";
-    bandName =
-      inputStartsWithThe && !currentEndsWithT
-        ? removeWord("the", bandName)
-        : bandName;
-    bandName = bandName.trim();
-
-    console.log(
-      "Validating band name: -->" + colors.red + bandName + colors.reset + "<--"
-    );
-
-    if (currentBandName[currentBandNameLength - 1] === bandName[0]) {
-      const bandList = await searchLastFM(bandName);
-      return await checkIfBandNameExistsInList(bandList, bandName);
-    } else {
-      return false;
-    }
-  };
-
-  ////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////
-
-  const checkIfBandNameExistsInList = async (
-    bandList: String[],
-    bandName: string
-  ) => {
-    if (bandList.length === 0) {
-      console.log(`${bandName} not found on lastFM!`);
-      return false;
-    } else if (bandName === bandList[0]) {
-      console.log("Band is top result on lastFM!");
-
-      const bandListLower = bandList.map((band) => band.toLowerCase());
-
-      bandList.forEach((band) => {
-        if (bandListLower.indexOf(band.toLowerCase()) === 0) {
-          console.log(colors.green + "----->", band, colors.reset);
-        } else {
-          console.log(colors.darkGray + band, colors.reset);
-        }
-      });
-
-      return true;
-    } else {
-      const bandListLowerNoThe = bandList.map((band) => {
-        if (band.substring(0, 3).toLowerCase() === "the") {
-          return band.substring(3, band.length).toLowerCase();
-        } else {
-          return band.toLowerCase();
-        }
-      });
-
-      if (bandListLowerNoThe.includes(bandName.toLowerCase())) {
-        console.log(`Found a match for ${bandName} in response from lastFM:`);
-
-        bandListLowerNoThe.forEach((band) => {
-          if (
-            bandListLowerNoThe.indexOf(band.toLowerCase()) ===
-            bandListLowerNoThe.indexOf(bandName.toLowerCase())
-          ) {
-            console.log(colors.green + "----->", band, colors.reset);
-          } else {
-            console.log(colors.darkGray + band, colors.reset);
-          }
-        });
-        return true;
-      } else {
-        console.log(
-          `Found no exact match for ${bandName} in response from lastFM:`
-        );
-        bandList.forEach((band) => {
-          console.log(band);
-        });
-        return false;
-      }
-    }
-  };
-
-  const removeWord = (wordToRemove: string, bandName: string) => {
-    if (
-      bandName.substring(0, wordToRemove.length).toLowerCase() === wordToRemove
-    ) {
-      bandName = bandName.substring(3, bandName.length);
-    }
-    return bandName;
-  };
-
   const handleNewGuess = async (guessBandName: string) => {
     if (guessBandName.length === 0) return;
-    guessBandName.trim();
-    const bandNameIsValid = await isValidBandName(guessBandName);
-    if (!bandNameIsValid) return handleInvalidGuess();
+    guessBandName = guessBandName.trim();
+    if (!(await isValidBandName(guessBandName, gameData)))
+      return handleInvalidGuess();
 
     const player = "player";
 
@@ -216,6 +119,7 @@ const ChatInput = (props: ChatInputProps) => {
     }, 2000);
   };
 
+  //TODO: Clean this up
   const styleWordThe = (inputBandName: string) => {
     if (!inputBandName) return { color: "black" };
     const currentBandNameLength = gameData.currentBandName.length;

@@ -2,9 +2,11 @@ import { View, StyleSheet, Text } from "react-native";
 import { auth } from "../../firebaseConfig";
 import { useEffect, useState } from "react";
 import { User } from "firebase/auth";
+import { useGameStore } from "../../stores/gameStore";
 
 export default function WelcomeTicker() {
   const [user, setUser] = useState<User | null>(null);
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       console.log("User:", user);

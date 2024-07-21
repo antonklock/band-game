@@ -5,55 +5,50 @@ import StartRoundButton from "./StartRoundButton";
 import ChatInput from "./ChatInput/ChatInput";
 import GameContent from "./GameContent";
 import GameHeader from "./GameHeader/GameHeader";
-import { GameData } from "../../types";
 import { getAiResponse } from "../../utils/GameAI/GameAiPlayer";
 import { searchLastFM } from "../../api/lastFM/lastFM";
-
-const initialGameData: GameData = {
-  players: {
-    player: {
-      id: "player-id", // TODO: Replace with "player-id"
-      name: "Player 1",
-      score: 0,
-      strikes: 0,
-    },
-    opponent: {
-      id: "opponent-id", // TODO: Replace with "opponent-id
-      name: "Player 2",
-      score: 0,
-      strikes: 0,
-    },
-  },
-  bands: [],
-  currentBandName: "",
-  inputBandName: "",
-  gameStarted: false,
-};
-
-const DebugBandNames = [
-  "The Cardigans",
-  "Snoop Dogg",
-  "The Who",
-  "Pink Floyd",
-  "K's Choice",
-  "Amason",
-];
+import { useGameStore } from "../../stores/gameStore";
 
 export default function NewGame({ navigation }: { navigation: any }) {
   // DEBUG: Adding first message - A random band name
   useEffect(() => {
-    const randomBandName =
-      DebugBandNames[Math.floor(Math.random() * DebugBandNames.length)];
-    handleAddNewBand(randomBandName, "opponent");
+    async function getNewBand() {
+      try {
+        const randomLetter = String.fromCharCode(
+          65 + Math.floor(Math.random() * 26)
+        );
+        const newBands = await searchLastFM(randomLetter);
+        const newBand = newBands[Math.floor(Math.random() * newBands.length)]
+          .split(" ")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+
+        handleAddNewBand(newBand, "opponent");
+      } catch (error) {
+        console.error("Failed to fetch new band", error);
+      }
+    }
+
+    getNewBand();
+
+    return () => {
+      // Resetting the game store when leaving the match
+      useGameStore.setState({
+        bands: [],
+        currentBandName: "",
+        gameStarted: false,
+      });
+    };
   }, []);
 
   const [inputBandName, setInputBandName] = useState("");
-
-  const [gameData, setGameData] = useState<GameData>(initialGameData);
+  const gameData = useGameStore((state) => state);
 
   useEffect(() => {
     if (gameData.bands.length === 0) return;
+
     const lastBand = gameData.bands[gameData.bands.length - 1];
+
     if (lastBand.guesser === "player") {
       const randomTimeoutTime = Math.floor(Math.random() * 6000) + 1000;
 
@@ -100,12 +95,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
   }, [gameData.bands]);
 
   const handleSetRoundStarted = () => {
-    setGameData((prev) => {
-      return {
-        ...prev,
-        gameStarted: true,
-      };
-    });
+    useGameStore.setState({ gameStarted: true });
   };
 
   const handleAddNewBand = (
@@ -113,14 +103,11 @@ export default function NewGame({ navigation }: { navigation: any }) {
     player: "player" | "opponent"
   ) => {
     bandName = bandName.trim();
-    setGameData((prev) => {
-      return {
-        ...prev,
-        bands: [...prev.bands, { name: bandName, guesser: player }],
-        currentBandName: bandName,
-        gameStarted: false,
-      };
-    });
+    useGameStore.setState((state) => ({
+      bands: [...state.bands, { name: bandName, guesser: player }],
+      currentBandName: bandName,
+      gameStarted: false,
+    }));
   };
 
   const isWaitingOnOpponent = () => {

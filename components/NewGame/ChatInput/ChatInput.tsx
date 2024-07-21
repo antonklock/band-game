@@ -7,7 +7,7 @@ import {
   Text,
 } from "react-native";
 import { GameData } from "../../../types";
-import { isValidBandName } from "./isValidBandName";
+import { isValidBandName } from "./validateBandName";
 
 type ChatInputProps = {
   gameData: GameData;
@@ -42,10 +42,9 @@ const ChatInput = (props: ChatInputProps) => {
   };
 
   useEffect(() => {
-    const currentBandNameLastLetter =
-      gameData.currentBandName[
-        gameData.currentBandName.length - 1
-      ].toLowerCase();
+    const currentBandNameLastLetter = gameData.currentBandName
+      .slice(-1)
+      .toLowerCase();
 
     if (startsWithThe(inputBandName)) {
       if (inputBandName.length >= 3) {

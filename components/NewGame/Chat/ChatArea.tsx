@@ -25,6 +25,7 @@ const ChatArea = () => {
               key={index}
               message={band.name}
               guesser={band.guesser}
+              status={band.status}
             />
           </View>
         );

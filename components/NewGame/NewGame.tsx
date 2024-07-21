@@ -8,6 +8,13 @@ import GameHeader from "./GameHeader/GameHeader";
 import { getAiResponse } from "../../utils/GameAI/GameAiPlayer";
 import { searchLastFM } from "../../api/lastFM/lastFM";
 import { useGameStore } from "../../stores/gameStore";
+import uuid from "react-native-uuid";
+import { handleAddNewBand } from "./handleAddBand";
+import { setCurrentBandName } from "../../stores/gameStoreFunctions";
+// import {
+//   addNewBandToGameStore,
+//   updateBandStatus,
+// } from "../../stores/gameStoreFunctions";
 
 export default function NewGame({ navigation }: { navigation: any }) {
   // DEBUG: Adding first message - A random band name
@@ -23,7 +30,9 @@ export default function NewGame({ navigation }: { navigation: any }) {
           .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
           .join(" ");
 
-        handleAddNewBand(newBand, "opponent");
+        const guessId = uuid.v4() as string;
+        handleAddNewBand(newBand, "opponent", guessId);
+        setCurrentBandName(guessId);
       } catch (error) {
         console.error("Failed to fetch new band", error);
       }
@@ -49,7 +58,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
 
     const lastBand = gameData.bands[gameData.bands.length - 1];
 
-    if (lastBand.guesser === "player") {
+    if (lastBand.guesser === "player" && lastBand.status === "valid") {
       const randomTimeoutTime = Math.floor(Math.random() * 6000) + 1000;
 
       const fetchAndAddBand = async () => {
@@ -73,7 +82,9 @@ export default function NewGame({ navigation }: { navigation: any }) {
 
               console.log("New band: ", newBand);
 
-              handleAddNewBand(newBand, "opponent");
+              const guessId = uuid.v4() as string;
+              handleAddNewBand(newBand, "opponent", guessId);
+              setCurrentBandName(guessId);
               break;
             }
           }
@@ -96,18 +107,6 @@ export default function NewGame({ navigation }: { navigation: any }) {
 
   const handleSetRoundStarted = () => {
     useGameStore.setState({ gameStarted: true });
-  };
-
-  const handleAddNewBand = (
-    bandName: string,
-    player: "player" | "opponent"
-  ) => {
-    bandName = bandName.trim();
-    useGameStore.setState((state) => ({
-      bands: [...state.bands, { name: bandName, guesser: player }],
-      currentBandName: bandName,
-      gameStarted: false,
-    }));
   };
 
   const isWaitingOnOpponent = () => {

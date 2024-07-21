@@ -8,11 +8,20 @@ import {
 } from "react-native";
 import { isValidBandName } from "./validateBandName";
 import { useGameStore } from "../../../stores/gameStore";
+import uuid from "react-native-uuid";
+import {
+  setCurrentBandName,
+  updateBandStatus,
+} from "../../../stores/gameStoreFunctions";
 
 type ChatInputProps = {
   setInputBandName: (inputBandName: string) => void;
   inputBandName: string;
-  handleAddNewBand: (bandName: string, player: "player" | "opponent") => void;
+  handleAddNewBand: (
+    bandName: string,
+    player: "player" | "opponent",
+    guessId: string
+  ) => void;
 };
 
 const ChatInput = (props: ChatInputProps) => {
@@ -68,21 +77,34 @@ const ChatInput = (props: ChatInputProps) => {
   const handleNewGuess = async (guessBandName: string) => {
     if (guessBandName.length === 0) return;
     guessBandName = guessBandName.trim();
-    if (!(await isValidBandName(guessBandName))) return handleInvalidGuess();
 
     const player = "player";
 
-    // Each first letter is capitalized
     guessBandName = guessBandName
       .split(" ")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
 
-    handleAddNewBand(guessBandName, player);
-    inputRef.current?.clear();
-    inputRef.current?.blur();
+    const guessId = uuid.v4() as string;
+    handleAddNewBand(guessBandName, player, guessId);
+
+    const guessIsValid = await isValidBandName(guessBandName);
 
     setInputBandName("");
+
+    const timeout = setTimeout(() => {
+      updateBandStatus(guessId, guessIsValid ? "valid" : "invalid");
+
+      if (!guessIsValid) {
+        handleInvalidGuess();
+      } else {
+        useGameStore.setState({ gameStarted: false });
+        setCurrentBandName(guessId);
+        inputRef.current?.clear();
+        inputRef.current?.blur();
+      }
+      clearInterval(timeout);
+    }, Math.random() * 3000 + 1000);
   };
 
   const handleSetInputBandName = (inputBandName: string) => {
@@ -91,12 +113,13 @@ const ChatInput = (props: ChatInputProps) => {
 
   const handleInvalidGuess = () => {
     console.log("Invalid guess");
+    inputRef.current?.focus();
     inputRef.current?.setNativeProps({
       style: {
         ...styles.textInput,
-        borderColor: "red",
+        borderColor: "green",
         borderWidth: 2,
-        color: "red",
+        color: "black",
       },
     });
     setTimeout(() => {

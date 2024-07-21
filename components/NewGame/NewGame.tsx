@@ -86,7 +86,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
         if (gameData.currentBandName) {
           return fetchAndAddBand();
         } else {
-          return getAiResponse(gameData);
+          return getAiResponse();
         }
       }, randomTimeoutTime);
 
@@ -122,14 +122,13 @@ export default function NewGame({ navigation }: { navigation: any }) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <GameHeader navigation={navigation} gameData={gameData} />
+      <GameHeader navigation={navigation} />
 
-      <GameContent inputBandName={inputBandName} gameData={gameData} />
+      <GameContent />
       {gameData.gameStarted ? (
         <ChatInput
           setInputBandName={setInputBandName}
           inputBandName={inputBandName}
-          gameData={gameData}
           handleAddNewBand={handleAddNewBand}
         />
       ) : (

@@ -6,25 +6,19 @@ import {
   TouchableOpacity,
   Text,
 } from "react-native";
-import { GameData } from "../../../types";
 import { isValidBandName } from "./validateBandName";
+import { useGameStore } from "../../../stores/gameStore";
 
 type ChatInputProps = {
-  gameData: GameData;
   setInputBandName: (inputBandName: string) => void;
   inputBandName: string;
   handleAddNewBand: (bandName: string, player: "player" | "opponent") => void;
 };
 
-const colors = {
-  reset: "\x1b[0m",
-  green: "\x1b[32m",
-  darkGray: "\x1b[90m",
-  red: "\x1b[31m",
-};
-
 const ChatInput = (props: ChatInputProps) => {
-  const { setInputBandName, inputBandName, gameData, handleAddNewBand } = props;
+  const { setInputBandName, inputBandName, handleAddNewBand } = props;
+
+  const gameData = useGameStore((state) => state);
 
   const inputRef = useRef<TextInput>(null);
   const [theWord, setTheWord] = useState("");
@@ -74,8 +68,7 @@ const ChatInput = (props: ChatInputProps) => {
   const handleNewGuess = async (guessBandName: string) => {
     if (guessBandName.length === 0) return;
     guessBandName = guessBandName.trim();
-    if (!(await isValidBandName(guessBandName, gameData)))
-      return handleInvalidGuess();
+    if (!(await isValidBandName(guessBandName))) return handleInvalidGuess();
 
     const player = "player";
 

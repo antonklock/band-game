@@ -1,6 +1,6 @@
-import { GameData } from "../../../types";
 import { searchLastFM } from "../../../api/lastFM/lastFM";
 import { logMatchingArtists } from "./logMatchingArtists";
+import { useGameStore } from "../../../stores/gameStore";
 
 const colors = {
     reset: "\x1b[0m",
@@ -9,9 +9,10 @@ const colors = {
     pink: "\x1b[35m",
 };
 
-//TODO: Remove gameData from arguments and use a store
-export const isValidBandName = async (bandName: string, gameData: GameData) => {
+export const isValidBandName = async (bandName: string) => {
     try {
+        const gameData = useGameStore.getState();
+
         const currentBandName = gameData.currentBandName.trim().toLowerCase();
         const inputBandName = bandName.trim().toLowerCase();
 

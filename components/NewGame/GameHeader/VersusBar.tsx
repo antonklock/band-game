@@ -1,15 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Strikes from "./PointMarker";
-import { GameData } from "../../../types";
+import { useGameStore } from "../../../stores/gameStore";
 
-type VersusBarProps = {
-  players: GameData["players"];
-};
-
-const VersusBar = (props: VersusBarProps) => {
-  const { players } = props;
-  const { player, opponent } = players;
+const VersusBar = () => {
+  const { player, opponent } = useGameStore((state) => state.players);
   const { name: playerName } = player;
   const { name: opponentName } = opponent;
   const { strikes: playerStrikes } = player;

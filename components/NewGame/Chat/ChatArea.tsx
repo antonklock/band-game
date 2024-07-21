@@ -1,14 +1,11 @@
 import { ScrollView, View, Text, StyleSheet } from "react-native";
 import Message from "./Message";
-import { GameData } from "../../../types";
 import { useRef } from "react";
+import { useGameStore } from "../../../stores/gameStore";
 
-type ChatAreaProps = {
-  gameData: GameData;
-};
+const ChatArea = () => {
+  const gameData = useGameStore((state) => state);
 
-const ChatArea = (props: ChatAreaProps) => {
-  const { gameData } = props;
   const scrollViewRef = useRef<ScrollView>(null);
   return (
     <ScrollView ref={scrollViewRef} contentContainerStyle={styles.chatArea}>

@@ -1,20 +1,22 @@
 import { Button, Text, View, StyleSheet } from "react-native";
 import CountDown from "./CountDown";
 import VersusBar from "./VersusBar";
-import { GameData } from "../../../types";
+import { useGameStore } from "../../../stores/gameStore";
 
 type GameHeaderProps = {
   navigation: any;
-  gameData: GameData;
 };
 
 const GameHeader = (props: GameHeaderProps) => {
-  const { navigation, gameData } = props;
+  const { navigation } = props;
+
+  const gameData = useGameStore((state) => state);
+
   const roundStarted = gameData.gameStarted;
 
   return (
     <View style={styles.gameHeader}>
-      <VersusBar players={gameData.players} />
+      <VersusBar />
       {roundStarted && (
         <>
           <View style={styles.navBar}>

@@ -1,15 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import { View, StyleSheet, ScrollView, Keyboard } from "react-native";
-import { GameData } from "../../types";
 import ChatArea from "./Chat/ChatArea";
+import { useGameStore } from "../../stores/gameStore";
 
-type GameContentProps = {
-  inputBandName: string;
-  gameData: GameData;
-};
-
-const GameContent = (props: GameContentProps) => {
-  const { gameData } = props;
+const GameContent = () => {
+  const gameData = useGameStore((state) => state);
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Scroll to the end of the chat when a new message is added
@@ -43,7 +38,7 @@ const GameContent = (props: GameContentProps) => {
 
   return (
     <View style={styles.gameContent}>
-      <ChatArea gameData={gameData} />
+      <ChatArea />
     </View>
   );
 };

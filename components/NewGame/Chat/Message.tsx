@@ -1,7 +1,7 @@
 import { View, StyleSheet } from "react-native";
 
 type MessageProps = {
-  guesser: "player" | "opponent";
+  guesser: GuesserType;
   message: string;
   hidden: boolean;
   status: "valid" | "invalid" | "validating";
@@ -9,12 +9,13 @@ type MessageProps = {
 
 import PlayerMessage from "./PlayerMessage";
 import OpponentMessage from "./OpponentMessage";
+import { GuesserType } from "../../../types";
 
 const Message = (props: MessageProps) => {
   const { guesser, message, hidden, status } = props;
   return (
     <View style={styles.messageView}>
-      {guesser === "player" ? (
+      {guesser === "homePlayer" ? (
         <PlayerMessage message={message} status={status} />
       ) : (
         <OpponentMessage hidden={hidden} message={message} />

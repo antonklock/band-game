@@ -7,14 +7,21 @@ import FooterMenu from "./FooterMenu/FooterMenu";
 import { auth } from "../firebaseConfig";
 import { useEffect, useState } from "react";
 import { User } from "firebase/auth";
+import { subscribeToGames } from "../stores/activeGameStores";
 
 export default function HomeScreen({ navigation }: { navigation: any }) {
   // TODO: Change to use a store instead of useState
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    const unsubscribe = subscribeToGames();
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      console.log("User:", user);
+      // console.log("User:", user);
       setUser(user);
     });
 

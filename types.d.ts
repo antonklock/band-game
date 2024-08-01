@@ -1,5 +1,5 @@
 type PlayerStrike = 0 | 1 | 2 | 3;
-type GuesserType = "player" | "opponent";
+type GuesserType = "homePlayer" | "awayPlayer";
 type BandStatus = "valid" | "invalid" | "validating";
 
 interface Player {
@@ -19,13 +19,15 @@ interface Band {
 
 interface GameData {
     players: {
-        player: Player;
-        opponent: Player;
+        homePlayer: Player;
+        awayPlayer: Player;
     };
     bands: Band[];
     currentBandName: string;
     inputBandName: string;
     gameStarted: boolean;
+    currentTurn: GuesserType;
+    id: string;
 }
 
 export { GameData, Band, Player, PlayerStrike, GuesserType, BandStatus };

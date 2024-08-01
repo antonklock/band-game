@@ -4,7 +4,9 @@ import Strikes from "./PointMarker";
 import { useGameStore } from "../../../stores/gameStore";
 
 const VersusBar = () => {
-  const { player, opponent } = useGameStore((state) => state.players);
+  const { homePlayer: player, awayPlayer: opponent } = useGameStore(
+    (state) => state.players
+  );
   const { name: playerName } = player;
   const { name: opponentName } = opponent;
   const { strikes: playerStrikes } = player;

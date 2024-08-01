@@ -13,13 +13,14 @@ import {
   setCurrentBandName,
   updateBandStatus,
 } from "../../../stores/gameStoreFunctions";
+import { GuesserType } from "../../../types";
 
 type ChatInputProps = {
   setInputBandName: (inputBandName: string) => void;
   inputBandName: string;
   handleAddNewBand: (
     bandName: string,
-    player: "player" | "opponent",
+    player: GuesserType,
     guessId: string
   ) => void;
 };
@@ -78,7 +79,7 @@ const ChatInput = (props: ChatInputProps) => {
     if (guessBandName.length === 0) return;
     guessBandName = guessBandName.trim();
 
-    const player = "player";
+    const player = "homePlayer";
 
     guessBandName = guessBandName
       .split(" ")

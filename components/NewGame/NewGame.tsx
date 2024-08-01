@@ -11,10 +11,6 @@ import { useGameStore } from "../../stores/gameStore";
 import uuid from "react-native-uuid";
 import { handleAddNewBand } from "./handleAddBand";
 import { setCurrentBandName } from "../../stores/gameStoreFunctions";
-// import {
-//   addNewBandToGameStore,
-//   updateBandStatus,
-// } from "../../stores/gameStoreFunctions";
 
 export default function NewGame({ navigation }: { navigation: any }) {
   // DEBUG: Adding first message - A random band name
@@ -31,7 +27,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
           .join(" ");
 
         const guessId = uuid.v4() as string;
-        handleAddNewBand(newBand, "opponent", guessId);
+        handleAddNewBand(newBand, "awayPlayer", guessId);
         setCurrentBandName(guessId);
       } catch (error) {
         console.error("Failed to fetch new band", error);
@@ -58,7 +54,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
 
     const lastBand = gameData.bands[gameData.bands.length - 1];
 
-    if (lastBand.guesser === "player" && lastBand.status === "valid") {
+    if (lastBand.guesser === "homePlayer" && lastBand.status === "valid") {
       const randomTimeoutTime = Math.floor(Math.random() * 6000) + 1000;
 
       const fetchAndAddBand = async () => {
@@ -83,7 +79,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
               console.log("New band: ", newBand);
 
               const guessId = uuid.v4() as string;
-              handleAddNewBand(newBand, "opponent", guessId);
+              handleAddNewBand(newBand, "awayPlayer", guessId);
               setCurrentBandName(guessId);
               break;
             }
@@ -112,7 +108,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
   const isWaitingOnOpponent = () => {
     if (gameData.bands.length === 0) return false;
     const lastBand = gameData.bands[gameData.bands.length - 1];
-    if (lastBand.guesser === "opponent") return false;
+    if (lastBand.guesser === "awayPlayer") return false;
     return true;
   };
 

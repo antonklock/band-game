@@ -4,13 +4,13 @@ import { GameData } from '../types'
 export const useGameStore = create<GameData>()(
     (set) => ({
         players: {
-            player: {
+            homePlayer: {
                 id: 'playerID',
                 name: 'player',
                 score: 0,
                 strikes: 0
             },
-            opponent: {
+            awayPlayer: {
                 id: 'opponentID',
                 name: 'opponent',
                 score: 0,
@@ -21,5 +21,6 @@ export const useGameStore = create<GameData>()(
         currentBandName: "",
         inputBandName: "",
         gameStarted: false,
+        currentTurn: "homePlayer",
     })
 );

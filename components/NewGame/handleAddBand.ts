@@ -1,13 +1,14 @@
 import { addNewBandToGameStore } from "../../stores/gameStoreFunctions";
+import { GuesserType } from "../../types";
 
 export const handleAddNewBand = (
     bandName: string,
-    player: "player" | "opponent",
+    player: GuesserType,
     guessId: string
 ) => {
     bandName = bandName.trim();
 
-    if (player === "opponent") {
+    if (player === "awayPlayer") {
         const newBandProps = {
             name: bandName,
             guesser: player,

@@ -10,6 +10,7 @@ export default function WelcomeTicker() {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       console.log("User:", user);
+      console.log("User.uid:", user?.uid);
       if (user) setUser(user);
     });
     return unsubscribe;

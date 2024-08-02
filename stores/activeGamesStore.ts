@@ -1,17 +1,41 @@
 import { firestore } from '../firebaseConfig';
 
-import { getFirestore, collection, onSnapshot, updateDoc, arrayUnion, doc } from 'firebase/firestore';
+import { collection, onSnapshot, updateDoc, arrayUnion, deleteDoc, doc, addDoc } from 'firebase/firestore';
 import { Band, BandStatus, GameData } from '../types';
 import { create } from 'zustand';
 
 interface ActiveGameStore {
     games: GameData[];
     setGames: (games: GameData[]) => void;
+    removeGame: (gameId: string) => void;
+    updateGame: (gameId: string, updatedGame: GameData) => void;
+    addGame: (newGame: GameData) => void;
 }
 
 export const useActiveGameStore = create<ActiveGameStore>((set) => ({
     games: [],
     setGames: (games) => set({ games }),
+    removeGame: async (gameId: string) => {
+        try {
+            await deleteDoc(doc(firestore, 'games', gameId));
+            // set((state) => ({
+            //     games: state.games.filter((game) => game.id !== gameId)
+            // }));
+        } catch (error) {
+            console.error('Error removing game:', error);
+        }
+    },
+    updateGame: (gameId: string, updatedGame: GameData) => set((state) => ({
+        games: state.games.map((game) => game.id === gameId ? updatedGame : game),
+    })),
+    addGame: async (newGame: Omit<GameData, 'id'>) => {
+        try {
+            const docRef = await addDoc(collection(firestore, 'games'), newGame);
+            await updateDoc(doc(firestore, 'games', docRef.id), { id: docRef.id });
+        } catch (error) {
+            console.error('Error adding game: ', error);
+        }
+    },
 }));
 
 export const subscribeToGames = () => {

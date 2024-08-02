@@ -1,4 +1,4 @@
-import { bands } from './exampleBandNames.js';
+import { bands } from './exampleBandNames';
 import { searchLastFM } from '../../api/lastFM/lastFM';
 import { useGameStore } from '../../stores/gameStore';
 

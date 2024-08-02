@@ -1,4 +1,10 @@
-const bands = {
+// Create type for bands
+
+type BandList = {
+  [key: string]: string[];
+}
+
+const bands: BandList = {
   "A": ["AC/DC", "Aerosmith", "Arctic Monkeys", "Arcade Fire", "A Perfect Circle", "Alice in Chains", "Avenged Sevenfold"],
   "B": ["Beatles", "Bee Gees", "Black Sabbath", "Blur", "Black Keys", "Beach Boys", "Bastille"],
   "C": ["Coldplay", "Creedence Clearwater Revival", "Chicago", "Clash", "Cheap Trick", "Cranberries", "Cage the Elephant"],
@@ -27,4 +33,10 @@ const bands = {
   "Z": ["ZZ Top", "Zombies", "Zac Brown Band", "Zedd", "Zebrahead", "Zappa", "Zeal & Ardor"]
 };
 
-export {bands};
+const getRandomBandName = (): string => {
+  let letter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+  let band = bands[letter][Math.floor(Math.random() * bands[letter].length)];
+  return band;
+}
+
+export { bands, getRandomBandName };

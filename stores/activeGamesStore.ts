@@ -18,20 +18,25 @@ export const useActiveGameStore = create<ActiveGameStore>((set) => ({
     removeGame: async (gameId: string) => {
         try {
             await deleteDoc(doc(firestore, 'games', gameId));
-            // set((state) => ({
-            //     games: state.games.filter((game) => game.id !== gameId)
-            // }));
+            console.log(`Game ${gameId} removed successfully`);
         } catch (error) {
             console.error('Error removing game:', error);
         }
     },
-    updateGame: (gameId: string, updatedGame: GameData) => set((state) => ({
-        games: state.games.map((game) => game.id === gameId ? updatedGame : game),
-    })),
+    updateGame: async (gameId: string, updatedGame: Partial<GameData>) => {
+        try {
+            const gameRef = doc(firestore, 'games', gameId);
+            await updateDoc(gameRef, updatedGame);
+            console.log(`Game ${gameId} updated successfully`);
+        } catch (error) {
+            console.error("Error updating game: ", error);
+        }
+    },
     addGame: async (newGame: Omit<GameData, 'id'>) => {
         try {
             const docRef = await addDoc(collection(firestore, 'games'), newGame);
             await updateDoc(doc(firestore, 'games', docRef.id), { id: docRef.id });
+            console.log(`Game ${docRef.id} added successfully`);
         } catch (error) {
             console.error('Error adding game: ', error);
         }

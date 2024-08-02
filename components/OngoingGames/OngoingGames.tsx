@@ -17,7 +17,7 @@ export default function OngoingGames({ navigation }: { navigation: any }) {
   // const removeGame = useActiveGameStore((state) => state.removeGame);
   // const addGame = useActiveGameStore((state) => state.addGame);
 
-  const { games, removeGame, addGame } = useActiveGameStore();
+  const { games, removeGame, addGame, updateGame } = useActiveGameStore();
 
   // TODO: Change to use a store instead of useState
   const [user, setUser] = useState<User | null>(null);
@@ -32,6 +32,12 @@ export default function OngoingGames({ navigation }: { navigation: any }) {
 
   const handleRemoveGame = (gameId: string) => {
     removeGame(gameId);
+  };
+
+  const handleUpdateGame = (gameId: string) => {
+    const gameRef = games.find((game) => game.id === gameId);
+    if (gameRef)
+      updateGame(gameId, { ...gameRef, currentBandName: getRandomBandName() });
   };
 
   const handleAddGame = () => {
@@ -52,7 +58,9 @@ export default function OngoingGames({ navigation }: { navigation: any }) {
   return (
     <View style={styles.container}>
       <View style={styles.textContainer}>
-        <Text>This is the Ongoing Games Screen!</Text>
+        <Text style={{ color: "white" }}>
+          This is the Ongoing Games Screen!
+        </Text>
         <Button
           title="Home"
           onPress={() => {
@@ -75,9 +83,21 @@ export default function OngoingGames({ navigation }: { navigation: any }) {
                   <Text>Current Band Name: {item.currentBandName}</Text>
                   <TouchableOpacity
                     onPress={() => handleRemoveGame(item.id)}
-                    style={styles.removeGameButton}
+                    style={{
+                      ...styles.addNewGameButton,
+                      backgroundColor: "red",
+                    }}
                   >
                     <Text style={{ color: "white" }}>Delete</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      ...styles.addNewGameButton,
+                      backgroundColor: "yellow",
+                    }}
+                    onPress={() => handleUpdateGame(item.id)}
+                  >
+                    <Text style={{ color: "black" }}>Update Game</Text>
                   </TouchableOpacity>
                 </View>
               )}

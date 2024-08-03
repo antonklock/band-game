@@ -4,7 +4,8 @@ import { GuesserType } from "../../types";
 export const handleAddNewBand = (
     bandName: string,
     player: GuesserType,
-    guessId: string
+    guessId: string,
+    gameId: string
 ) => {
     bandName = bandName.trim();
 
@@ -13,6 +14,7 @@ export const handleAddNewBand = (
             name: bandName,
             guesser: player,
             guessId,
+            gameId,
         };
         addNewBandToGameStore(newBandProps, "valid");
     } else {
@@ -20,6 +22,7 @@ export const handleAddNewBand = (
             name: bandName,
             guesser: player,
             guessId,
+            gameId,
         };
         addNewBandToGameStore(newBandProps);
     }

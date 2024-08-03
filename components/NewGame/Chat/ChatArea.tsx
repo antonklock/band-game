@@ -1,7 +1,6 @@
 import { ScrollView, View, Text, StyleSheet } from "react-native";
 import Message from "./Message";
 import { useRef } from "react";
-import { useGameStore } from "../../../stores/gameStore";
 import { useActiveGamesStore } from "../../../stores/activeGamesStore";
 
 type ChatAreaProps = {
@@ -9,10 +8,11 @@ type ChatAreaProps = {
 };
 
 const ChatArea = (porps: ChatAreaProps) => {
-  // const gameData = useGameStore((state) => state);
-  const gameData = useActiveGamesStore
-    .getState()
-    .games.find((game) => game.id === porps.gameId);
+  const { gameId } = porps;
+
+  const gameData = useActiveGamesStore((state) =>
+    state.games.find((game) => game.id === gameId)
+  );
 
   const scrollViewRef = useRef<ScrollView>(null);
   return (

@@ -78,7 +78,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
     if (currentGameRef.bands.length === 0) return;
 
     runComputerGuess(currentGameId);
-  }, [currentGameId, currentGameData?.bands]);
+  }, [currentGameId, currentGameData?.bands, currentGameData?.currentTurn]);
 
   const handleSetRoundStarted = () => {
     useGameStore.setState({ gameStarted: true });
@@ -154,7 +154,7 @@ const runComputerGuess = async (currentGameId: string) => {
             console.log("New band: ", newBand);
 
             const guessId = uuid.v4() as string;
-            handleAddNewBand(newBand, "awayPlayer", guessId);
+            handleAddNewBand(newBand, "awayPlayer", guessId, currentGameId);
             setCurrentBandName(guessId);
             break;
           }

@@ -13,7 +13,7 @@ import {
   setCurrentBandName,
   updateBandStatus,
 } from "../../../stores/gameStoreFunctions";
-import { GuesserType } from "../../../types";
+import { BandStatus, GuesserType } from "../../../types";
 import { useActiveGamesStore } from "../../../stores/activeGamesStore";
 
 type ChatInputProps = {
@@ -23,7 +23,8 @@ type ChatInputProps = {
   handleAddNewBand: (
     bandName: string,
     player: GuesserType,
-    guessId: string
+    guessId: string,
+    gameId: string
   ) => void;
 };
 
@@ -97,25 +98,43 @@ const ChatInput = (props: ChatInputProps) => {
       .join(" ");
 
     const guessId = uuid.v4() as string;
-    handleAddNewBand(guessBandName, player, guessId);
+    handleAddNewBand(guessBandName, player, guessId, gameId);
 
     const guessIsValid = await isValidBandName(guessBandName, gameId);
 
     setInputBandName("");
 
-    useGameStore.setState({ gameStarted: false });
+    useActiveGamesStore
+      .getState()
+      .updateGame(gameId, (game) => ({ ...game, gameStarted: false }));
+
+    console.log("Validating...");
 
     const timeout = setTimeout(() => {
-      updateBandStatus(guessId, guessIsValid ? "valid" : "invalid");
+      updateBandStatus(guessId, guessIsValid ? "valid" : "invalid", gameId);
 
       //TODO: Fix invalid guess handling
       if (!guessIsValid) {
+        console.log("Invalid guess");
+
         handleInvalidGuess();
 
         useGameStore.setState({ gameStarted: true });
       } else {
+        console.log("Valid guess");
         useActiveGamesStore.getState().updateGame(gameId, (game) => ({
           ...game,
+          bands: [
+            ...game.bands,
+            {
+              name: guessBandName,
+              guesser: "homePlayer",
+              status: "valid",
+              guessId,
+              // TODO: Fix setStatus
+              setStatus: () => {},
+            },
+          ],
           currentBandName: guessBandName,
           gameStarted: false,
           currentTurn: "awayPlayer",

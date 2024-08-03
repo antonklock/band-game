@@ -47,11 +47,7 @@ const runComputerGuess = async (gameId: string) => {
                             setStatus: (status: BandStatus) => { }
                         }
 
-                        useActiveGamesStore.getState().updateGame(gameData.id, { ...gameData, currentBandName: newBand, bands: [...gameData.bands, newBandData] });
-
-                        // handleAddNewBand(newBand, "awayPlayer", guessId);
-                        // setCurrentBandName(guessId);
-                        // break;
+                        useActiveGamesStore.getState().updateGame(gameData.id, (game) => ({ ...gameData, currentBandName: newBand, bands: [...gameData.bands, newBandData] }));
                     }
                 }
             } catch (error) {

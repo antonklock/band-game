@@ -23,26 +23,6 @@ export const useActiveGamesStore = create<ActiveGameStore>((set) => ({
             console.error('Error removing game:', error);
         }
     },
-    // updateGame: async (gameId: string, updatedGame: Partial<GameData>) => {
-    //     try {
-    //         // TODO: TEST THIS PROPERLY
-    //         // Making local update to game first to reflect update immediately
-    //         const currentGames = useActiveGamesStore.getState().games;
-    //         const gameIndex = currentGames.findIndex((game) => game.id === gameId);
-    //         const updatedCurrentGame = { ...currentGames[gameIndex], ...updatedGame };
-    //         //////////////////////////////
-
-    //         //////////////////////////////
-    //         const gameRef = doc(firestore, 'games', gameId);
-    //         await updateDoc(gameRef, updatedCurrentGame);
-    //         // await updateDoc(gameRef, updatedGame);
-
-
-    //         console.log(`Game ${gameId} updated successfully`);
-    //     } catch (error) {
-    //         console.error("Error updating game: ", error);
-    //     }
-    // },
     updateGame: async (gameId: string, updateFn: (game: GameData) => GameData) =>
         set(
             (state) => {

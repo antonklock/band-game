@@ -10,16 +10,15 @@ type GameContentProps = {
 
 const GameContent = (props: GameContentProps) => {
   const { gameId } = props;
-  const gameData = useActiveGamesStore
-    .getState()
-    .games.find((game) => game.id === gameId);
+  const gameData = useActiveGamesStore((state) =>
+    state.games.find((game) => game.id === gameId)
+  );
 
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // useEffect(() => {
-  //   if (!gameData) return;
-
-  // }, [gameData?.id]);
+  useEffect(() => {
+    if (!gameData) return;
+  }, [gameData?.bands]);
 
   // Scroll to the end of the chat when a new message is added
   useEffect(() => {
@@ -52,7 +51,7 @@ const GameContent = (props: GameContentProps) => {
 
   return (
     <View style={styles.gameContent}>
-      <ChatArea gameId={gameData?.id} />
+      {gameData && <ChatArea gameId={gameData.id} />}
     </View>
   );
 };

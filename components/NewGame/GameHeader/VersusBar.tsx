@@ -9,15 +9,10 @@ type VersusBarProps = { gameId: string | undefined };
 
 const VersusBar = (props: VersusBarProps) => {
   const { gameId } = props;
-  const gameData = useActiveGamesStore
-    .getState()
-    .games.find((game) => game.id === gameId);
-  // const { homePlayer: player, awayPlayer: opponent } = gameData?.players;
-  // const player = gameData?.players.homePlayer;
-  // const opponent = gameData?.players.awayPlayer;
-  // const { homePlayer: player, awayPlayer: opponent } = useGameStore(
-  //   (state) => state.players
-  // );
+
+  const gameData = useActiveGamesStore((state) =>
+    state.games.find((game) => game.id === gameId)
+  );
 
   const playerName = gameData?.players.homePlayer.name;
   const opponentName = gameData?.players.awayPlayer.name;
@@ -33,10 +28,6 @@ const VersusBar = (props: VersusBarProps) => {
     oStrikes = opponentStrikes;
   }
 
-  // const { name: playerName } = player;
-  // const { name: opponentName } = opponent;
-  // const { strikes: playerStrikes } = player;
-  // const { strikes: opponentStrikes } = opponent;
   return (
     <View style={styles.versusBar}>
       <View style={styles.versusView}>

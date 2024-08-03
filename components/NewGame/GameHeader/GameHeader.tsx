@@ -16,7 +16,7 @@ const GameHeader = (props: GameHeaderProps) => {
   // const gameData = useGameStore((state) => state);
 
   const gameData = useActiveGamesStore((state) =>
-    state.games.find((g) => g.id === gameId)
+    state.games.find((game) => game.id === gameId)
   );
 
   const roundStarted = gameData?.gameStarted;

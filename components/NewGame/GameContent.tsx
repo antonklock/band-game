@@ -2,17 +2,31 @@ import React, { useEffect, useRef } from "react";
 import { View, StyleSheet, ScrollView, Keyboard } from "react-native";
 import ChatArea from "./Chat/ChatArea";
 import { useGameStore } from "../../stores/gameStore";
+import { useActiveGamesStore } from "../../stores/activeGamesStore";
 
-const GameContent = () => {
-  const gameData = useGameStore((state) => state);
+type GameContentProps = {
+  gameId: string | undefined;
+};
+
+const GameContent = (props: GameContentProps) => {
+  const { gameId } = props;
+  const gameData = useActiveGamesStore
+    .getState()
+    .games.find((game) => game.id === gameId);
+
   const scrollViewRef = useRef<ScrollView>(null);
+
+  // useEffect(() => {
+  //   if (!gameData) return;
+
+  // }, [gameData?.id]);
 
   // Scroll to the end of the chat when a new message is added
   useEffect(() => {
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollToEnd({ animated: true });
     }
-  }, [gameData.bands]);
+  }, [gameData?.bands]);
 
   // Add listeners for keyboard show and hide
   useEffect(() => {
@@ -38,7 +52,7 @@ const GameContent = () => {
 
   return (
     <View style={styles.gameContent}>
-      <ChatArea />
+      <ChatArea gameId={gameData?.id} />
     </View>
   );
 };

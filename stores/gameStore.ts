@@ -22,5 +22,6 @@ export const useGameStore = create<GameData>()(
         inputBandName: "",
         gameStarted: false,
         currentTurn: "homePlayer",
+        id: ""
     })
 );

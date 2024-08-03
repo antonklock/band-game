@@ -9,10 +9,10 @@ interface ActiveGameStore {
     setGames: (games: GameData[]) => void;
     removeGame: (gameId: string) => void;
     updateGame: (gameId: string, updatedGame: GameData) => void;
-    addGame: (newGame: GameData) => void;
+    addGame: (newGame: GameData) => Promise<string | null>;
 }
 
-export const useActiveGameStore = create<ActiveGameStore>((set) => ({
+export const useActiveGamesStore = create<ActiveGameStore>((set) => ({
     games: [],
     setGames: (games) => set({ games }),
     removeGame: async (gameId: string) => {
@@ -25,8 +25,18 @@ export const useActiveGameStore = create<ActiveGameStore>((set) => ({
     },
     updateGame: async (gameId: string, updatedGame: Partial<GameData>) => {
         try {
+            // Making local update to game first to reflect update immediately
+            const currentGames = useActiveGamesStore.getState().games;
+            const gameIndex = currentGames.findIndex((game) => game.id === gameId);
+            const updatedCurrentGame = { ...currentGames[gameIndex], ...updatedGame };
+            //////////////////////////////
+
+            //////////////////////////////
             const gameRef = doc(firestore, 'games', gameId);
-            await updateDoc(gameRef, updatedGame);
+            await updateDoc(gameRef, updatedCurrentGame);
+            // await updateDoc(gameRef, updatedGame);
+
+
             console.log(`Game ${gameId} updated successfully`);
         } catch (error) {
             console.error("Error updating game: ", error);
@@ -37,14 +47,16 @@ export const useActiveGameStore = create<ActiveGameStore>((set) => ({
             const docRef = await addDoc(collection(firestore, 'games'), newGame);
             await updateDoc(doc(firestore, 'games', docRef.id), { id: docRef.id });
             console.log(`Game ${docRef.id} added successfully`);
+            return docRef.id;
         } catch (error) {
             console.error('Error adding game: ', error);
+            return null;
         }
-    },
+    }
 }));
 
 export const subscribeToGames = () => {
-    const { setGames } = useActiveGameStore.getState();
+    const { setGames } = useActiveGamesStore.getState();
 
     const unsubscribe = onSnapshot(collection(firestore, 'games'), (snapshot) => {
         const games = snapshot.docs.map((doc) => {

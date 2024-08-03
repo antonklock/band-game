@@ -16,7 +16,7 @@ const GameHeader = (props: GameHeaderProps) => {
 
   return (
     <View style={styles.gameHeader}>
-      <VersusBar />
+      <VersusBar gameId={gameData?.id} />
       {roundStarted && (
         <>
           <View style={styles.navBar}>

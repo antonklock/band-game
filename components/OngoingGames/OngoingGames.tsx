@@ -6,7 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import { useActiveGameStore } from "../../stores/activeGamesStore";
+import { useActiveGamesStore } from "../../stores/activeGamesStore";
 import { useEffect, useState } from "react";
 import { auth } from "../../firebaseConfig";
 import { User } from "firebase/auth";
@@ -17,7 +17,7 @@ export default function OngoingGames({ navigation }: { navigation: any }) {
   // const removeGame = useActiveGameStore((state) => state.removeGame);
   // const addGame = useActiveGameStore((state) => state.addGame);
 
-  const { games, removeGame, addGame, updateGame } = useActiveGameStore();
+  const { games, removeGame, addGame, updateGame } = useActiveGamesStore();
 
   // TODO: Change to use a store instead of useState
   const [user, setUser] = useState<User | null>(null);

@@ -2,18 +2,26 @@ import { ScrollView, View, Text, StyleSheet } from "react-native";
 import Message from "./Message";
 import { useRef } from "react";
 import { useGameStore } from "../../../stores/gameStore";
+import { useActiveGamesStore } from "../../../stores/activeGamesStore";
 
-const ChatArea = () => {
-  const gameData = useGameStore((state) => state);
+type ChatAreaProps = {
+  gameId: string | undefined;
+};
+
+const ChatArea = (porps: ChatAreaProps) => {
+  // const gameData = useGameStore((state) => state);
+  const gameData = useActiveGamesStore
+    .getState()
+    .games.find((game) => game.id === porps.gameId);
 
   const scrollViewRef = useRef<ScrollView>(null);
   return (
     <ScrollView ref={scrollViewRef} contentContainerStyle={styles.chatArea}>
-      {gameData.bands.map((band, index) => {
+      {gameData?.bands.map((band, index) => {
         return (
           <View key={"chatMessage_" + index} style={{ width: "100%" }}>
             {index === gameData.bands.length - 1 &&
-              band.guesser === "opponent" && (
+              band.guesser === "awayPlayer" && (
                 <Text key={index + "_text"} style={styles.latestGuessText}>
                   Start round to see last message
                 </Text>

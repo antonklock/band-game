@@ -14,8 +14,10 @@ import {
   updateBandStatus,
 } from "../../../stores/gameStoreFunctions";
 import { GuesserType } from "../../../types";
+import { useActiveGamesStore } from "../../../stores/activeGamesStore";
 
 type ChatInputProps = {
+  gameId: string;
   setInputBandName: (inputBandName: string) => void;
   inputBandName: string;
   handleAddNewBand: (
@@ -26,9 +28,14 @@ type ChatInputProps = {
 };
 
 const ChatInput = (props: ChatInputProps) => {
-  const { setInputBandName, inputBandName, handleAddNewBand } = props;
+  const { setInputBandName, inputBandName, handleAddNewBand, gameId } = props;
 
-  const gameData = useGameStore((state) => state);
+  // const gameData = useGameStore((state) => state);
+  const gameData = useActiveGamesStore
+    .getState()
+    .games.find((game) => game.id === gameId);
+
+  if (!gameData) console.error("Game not found - please check the game ID");
 
   const inputRef = useRef<TextInput>(null);
   const [theWord, setTheWord] = useState("");
@@ -46,6 +53,8 @@ const ChatInput = (props: ChatInputProps) => {
   };
 
   useEffect(() => {
+    if (!gameData) return;
+
     const currentBandNameLastLetter = gameData.currentBandName
       .slice(-1)
       .toLowerCase();
@@ -93,11 +102,14 @@ const ChatInput = (props: ChatInputProps) => {
 
     setInputBandName("");
 
+    useGameStore.setState({ gameStarted: false });
+
     const timeout = setTimeout(() => {
       updateBandStatus(guessId, guessIsValid ? "valid" : "invalid");
 
       if (!guessIsValid) {
         handleInvalidGuess();
+        useGameStore.setState({ gameStarted: true });
       } else {
         useGameStore.setState({ gameStarted: false });
         setCurrentBandName(guessId);
@@ -137,6 +149,7 @@ const ChatInput = (props: ChatInputProps) => {
 
   //TODO: Clean this up
   const styleWordThe = (inputBandName: string) => {
+    if (!gameData) return { color: "black" };
     if (!inputBandName) return { color: "black" };
     const currentBandNameLength = gameData.currentBandName.length;
     const currentBandNameLastLetter =

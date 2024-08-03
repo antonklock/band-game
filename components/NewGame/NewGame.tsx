@@ -15,171 +15,95 @@ import { useActiveGamesStore } from "../../stores/activeGamesStore";
 import { GameData } from "../../types";
 
 export default function NewGame({ navigation }: { navigation: any }) {
-  // // DEBUG: Adding first message - A random band name
-  // useEffect(() => {
-  //   async function getNewBand() {
-  //     try {
-  //       const randomLetter = String.fromCharCode(
-  //         65 + Math.floor(Math.random() * 26)
-  //       );
-  //       const newBands = await searchLastFM(randomLetter);
-  //       const newBand = newBands[Math.floor(Math.random() * newBands.length)]
-  //         .split(" ")
-  //         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-  //         .join(" ");
+  const addGame = useActiveGamesStore((state) => state.addGame);
 
-  //       const guessId = uuid.v4() as string;
-  //       handleAddNewBand(newBand, "awayPlayer", guessId);
-  //       setCurrentBandName(guessId);
-  //     } catch (error) {
-  //       console.error("Failed to fetch new band", error);
-  //     }
-  //   }
-
-  //   getNewBand();
-
-  //   return () => {
-  //     // Resetting the game store when leaving the match
-  //     useGameStore.setState({
-  //       bands: [],
-  //       currentBandName: "",
-  //       gameStarted: false,
-  //     });
-  //   };
-  // }, []);
-
-  let gameData: GameData | undefined;
+  const [currentGameId, setCurrentGameId] = useState("");
+  const [currentGameData, setCurrentGameData] = useState<GameData | null>(null);
   const [inputBandName, setInputBandName] = useState("");
-  const newGameData: GameData = {
-    players: {
-      homePlayer: {
-        id: "playerID",
-        name: "Anton",
-        score: 0,
-        strikes: 0,
+
+  const createNewGame = async () => {
+    const newGameId = uuid.v4() as string;
+    const newGame: GameData = {
+      players: {
+        homePlayer: {
+          id: "playerID",
+          name: "Anton",
+          score: 0,
+          strikes: 0,
+        },
+        awayPlayer: {
+          id: "opponentID",
+          name: "Snobben",
+          score: 0,
+          strikes: 0,
+        },
       },
-      awayPlayer: {
-        id: "opponentID",
-        name: "Snobben",
-        score: 0,
-        strikes: 0,
-      },
-    },
-    bands: [],
-    currentBandName: "The Cardigans", // DEBUG: Adding first band name
-    inputBandName: "",
-    gameStarted: false,
-    currentTurn: "homePlayer",
-    id: "",
+      bands: [],
+      currentBandName: "The Cardigans", // DEBUG: Adding first band name
+      inputBandName: "",
+      gameStarted: true,
+      currentTurn: "homePlayer",
+      id: newGameId,
+    };
+
+    const addedGameId = await addGame(newGame);
+    if (addedGameId) {
+      return addedGameId;
+    } else {
+      console.error("Failed to add new game");
+      return null;
+    }
+  };
+
+  const handleCreateNewGame = async () => {
+    const newGameId = await createNewGame();
+    if (newGameId) {
+      setCurrentGameId(newGameId);
+    } else {
+      console.error("Failed to create new game");
+    }
   };
 
   useEffect(() => {
-    const createNewGame = async () => {
-      try {
-        const newGameId = await useActiveGamesStore
-          .getState()
-          .addGame(newGameData);
-        gameData = useActiveGamesStore
-          .getState()
-          .games.find((game) => game.id === newGameId);
-        console.log("New game created with id: ", newGameId);
-      } catch (error) {
-        console.error("Failed to create new game", error);
-      }
-    };
-
-    createNewGame();
+    handleCreateNewGame();
   }, []);
 
   useEffect(() => {
-    if (!gameData) return;
-    if (gameData.bands.length === 0) return;
+    const currentGameRef = useActiveGamesStore
+      .getState()
+      .games.find((game) => game.id === currentGameId);
+    if (!currentGameRef) return;
+    setCurrentGameData(currentGameRef);
 
-    runComputerGuess();
+    if (currentGameRef.bands.length === 0) return;
 
-    // const lastBand = gameData.bands[gameData.bands.length - 1];
-
-    // if (lastBand.guesser === "homePlayer" && lastBand.status === "valid") {
-    //   const randomTimeoutTime = Math.floor(Math.random() * 6000) + 1000;
-
-    //   const fetchAndAddBand = async () => {
-    //     try {
-    //       const lastLetter = gameData.currentBandName.slice(-1);
-    //       const searchResults = await searchLastFM(lastLetter);
-
-    //       let newBand = "";
-    //       for (
-    //         let i = Math.floor(Math.random() * searchResults.length);
-    //         i < searchResults.length;
-    //         i++
-    //       ) {
-    //         if (searchResults[i][0] === lastLetter) {
-    //           newBand = searchResults[i];
-
-    //           newBand = newBand
-    //             .split(" ")
-    //             .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    //             .join(" ");
-
-    //           console.log("New band: ", newBand);
-
-    //           const guessId = uuid.v4() as string;
-    //           handleAddNewBand(newBand, "awayPlayer", guessId);
-    //           setCurrentBandName(guessId);
-    //           break;
-    //         }
-    //       }
-    //     } catch (error) {
-    //       console.error("Failed to fetch new band", error);
-    //     }
-    //   };
-
-    //   const timeoutId = setTimeout(() => {
-    //     if (gameData.currentBandName) {
-    //       return fetchAndAddBand();
-    //     } else {
-    //       return getAiResponse();
-    //     }
-    //   }, randomTimeoutTime);
-
-    //   return () => clearTimeout(timeoutId);
-    // }
-  }, [gameData?.bands]);
+    runComputerGuess(currentGameId);
+  }, [currentGameId, currentGameData?.bands]);
 
   const handleSetRoundStarted = () => {
     useGameStore.setState({ gameStarted: true });
   };
 
   const isWaitingOnOpponent = () => {
-    if (!gameData) return false;
+    if (!currentGameData) return false;
 
-    if (gameData.bands.length === 0) return false;
-    const lastBand = gameData.bands[gameData.bands.length - 1];
+    if (currentGameData?.bands.length === 0) return false;
+    const lastBand = currentGameData.bands[currentGameData.bands.length - 1];
     if (lastBand.guesser === "awayPlayer") return false;
     return true;
   };
-
-  ////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////
-  //////// MAKE SURE GameData is fetched once and passed down to children. Children should not fetch GameData!
-  ////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////
-  //////// UPDATE CHILDREN! - IT'S BROKEN NOW
-  //////// UPDATE CHILDREN! - IT'S BROKEN NOW
-  ////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <GameHeader navigation={navigation} />
+      <GameHeader gameId={currentGameId} navigation={navigation} />
 
-      <GameContent gameId={gameData?.id} />
-      {gameData?.gameStarted ? (
+      <GameContent gameId={currentGameId} />
+      {currentGameData?.gameStarted ? (
         <ChatInput
-          gameId={gameData.id}
+          gameId={currentGameId}
           setInputBandName={setInputBandName}
           inputBandName={inputBandName}
           handleAddNewBand={handleAddNewBand}
@@ -195,8 +119,13 @@ export default function NewGame({ navigation }: { navigation: any }) {
   );
 }
 
-const runComputerGuess = async () => {
-  const gameData = useActiveGamesStore.getState().games[0];
+const runComputerGuess = async (currentGameId: string) => {
+  const gameData = useActiveGamesStore
+    .getState()
+    .games.find((game) => game.id === currentGameId);
+
+  if (!gameData)
+    return console.error("Game not found - please check the game ID");
 
   const lastBand = gameData.bands[gameData.bands.length - 1];
 

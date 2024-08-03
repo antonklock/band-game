@@ -1,6 +1,7 @@
 import { searchLastFM } from "../../../api/lastFM/lastFM";
 import { logMatchingArtists } from "./logMatchingArtists";
 import { useGameStore } from "../../../stores/gameStore";
+import { useActiveGamesStore } from "../../../stores/activeGamesStore";
 
 const colors = {
     reset: "\x1b[0m",
@@ -9,9 +10,11 @@ const colors = {
     pink: "\x1b[35m",
 };
 
-export const isValidBandName = async (bandName: string) => {
+export const isValidBandName = async (bandName: string, gameId: string) => {
     try {
-        const gameData = useGameStore.getState();
+        const gameData = useActiveGamesStore.getState().games.find((game) => game.id === gameId);
+
+        if (!gameData) return console.error("Game not found - please check the game ID");
 
         const currentBandName = gameData.currentBandName.trim().toLowerCase();
         const inputBandName = bandName.trim().toLowerCase();

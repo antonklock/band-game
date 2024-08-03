@@ -30,7 +30,6 @@ type ChatInputProps = {
 const ChatInput = (props: ChatInputProps) => {
   const { setInputBandName, inputBandName, handleAddNewBand, gameId } = props;
 
-  // const gameData = useGameStore((state) => state);
   const gameData = useActiveGamesStore
     .getState()
     .games.find((game) => game.id === gameId);
@@ -85,6 +84,8 @@ const ChatInput = (props: ChatInputProps) => {
   }, [inputBandName]);
 
   const handleNewGuess = async (guessBandName: string) => {
+    console.log("New guess: ", guessBandName);
+
     if (guessBandName.length === 0) return;
     guessBandName = guessBandName.trim();
 
@@ -98,7 +99,7 @@ const ChatInput = (props: ChatInputProps) => {
     const guessId = uuid.v4() as string;
     handleAddNewBand(guessBandName, player, guessId);
 
-    const guessIsValid = await isValidBandName(guessBandName);
+    const guessIsValid = await isValidBandName(guessBandName, gameId);
 
     setInputBandName("");
 
@@ -107,12 +108,18 @@ const ChatInput = (props: ChatInputProps) => {
     const timeout = setTimeout(() => {
       updateBandStatus(guessId, guessIsValid ? "valid" : "invalid");
 
+      //TODO: Fix invalid guess handling
       if (!guessIsValid) {
         handleInvalidGuess();
+
         useGameStore.setState({ gameStarted: true });
       } else {
-        useGameStore.setState({ gameStarted: false });
-        setCurrentBandName(guessId);
+        useActiveGamesStore.getState().updateGame(gameId, (game) => ({
+          ...game,
+          currentBandName: guessBandName,
+          gameStarted: false,
+          currentTurn: "awayPlayer",
+        }));
         inputRef.current?.clear();
         inputRef.current?.blur();
       }

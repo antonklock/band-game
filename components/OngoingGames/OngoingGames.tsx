@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { auth } from "../../firebaseConfig";
 import { User } from "firebase/auth";
 import { getRandomBandName } from "../../utils/GameAI/exampleBandNames";
+import uuid from "react-native-uuid";
 
 export default function OngoingGames({ navigation }: { navigation: any }) {
   // const games = useActiveGameStore((state) => state.games);
@@ -37,12 +38,15 @@ export default function OngoingGames({ navigation }: { navigation: any }) {
   const handleUpdateGame = (gameId: string) => {
     const gameRef = games.find((game) => game.id === gameId);
     if (gameRef)
-      updateGame(gameId, { ...gameRef, currentBandName: getRandomBandName() });
+      updateGame(gameId, (game) => ({
+        ...gameRef,
+        currentBandName: getRandomBandName(),
+      }));
   };
 
   const handleAddGame = () => {
     addGame({
-      id: "",
+      id: uuid.v4() as string,
       players: {
         homePlayer: { id: "123", name: "Home Player", score: 0, strikes: 0 },
         awayPlayer: { id: "456", name: "Away Player", score: 0, strikes: 0 },

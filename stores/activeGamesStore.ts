@@ -1,6 +1,6 @@
 import { firestore } from '../firebaseConfig';
 
-import { collection, onSnapshot, updateDoc, arrayUnion, deleteDoc, doc, addDoc } from 'firebase/firestore';
+import { collection, onSnapshot, updateDoc, arrayUnion, deleteDoc, doc, addDoc, setDoc } from 'firebase/firestore';
 import { Band, BandStatus, GameData } from '../types';
 import { create } from 'zustand';
 
@@ -8,7 +8,7 @@ interface ActiveGameStore {
     games: GameData[];
     setGames: (games: GameData[]) => void;
     removeGame: (gameId: string) => void;
-    updateGame: (gameId: string, updatedGame: GameData) => void;
+    updateGame: (gameId: string, updateFn: (game: GameData) => GameData) => void;
     addGame: (newGame: GameData) => Promise<string | null>;
 }
 
@@ -23,29 +23,41 @@ export const useActiveGamesStore = create<ActiveGameStore>((set) => ({
             console.error('Error removing game:', error);
         }
     },
-    updateGame: async (gameId: string, updatedGame: Partial<GameData>) => {
+    // updateGame: async (gameId: string, updatedGame: Partial<GameData>) => {
+    //     try {
+    //         // TODO: TEST THIS PROPERLY
+    //         // Making local update to game first to reflect update immediately
+    //         const currentGames = useActiveGamesStore.getState().games;
+    //         const gameIndex = currentGames.findIndex((game) => game.id === gameId);
+    //         const updatedCurrentGame = { ...currentGames[gameIndex], ...updatedGame };
+    //         //////////////////////////////
+
+    //         //////////////////////////////
+    //         const gameRef = doc(firestore, 'games', gameId);
+    //         await updateDoc(gameRef, updatedCurrentGame);
+    //         // await updateDoc(gameRef, updatedGame);
+
+
+    //         console.log(`Game ${gameId} updated successfully`);
+    //     } catch (error) {
+    //         console.error("Error updating game: ", error);
+    //     }
+    // },
+    updateGame: async (gameId: string, updateFn: (game: GameData) => GameData) =>
+        set(
+            (state) => {
+                const gameIndex = state.games.findIndex((game) => game.id === gameId);
+                if (gameIndex === -1) return state;
+                const newGames = [...state.games];
+                newGames[gameIndex] = updateFn(newGames[gameIndex]);
+                return { games: newGames };
+            },
+            false,
+        ),
+    addGame: async (newGame: GameData) => {
         try {
-            // Making local update to game first to reflect update immediately
-            const currentGames = useActiveGamesStore.getState().games;
-            const gameIndex = currentGames.findIndex((game) => game.id === gameId);
-            const updatedCurrentGame = { ...currentGames[gameIndex], ...updatedGame };
-            //////////////////////////////
-
-            //////////////////////////////
-            const gameRef = doc(firestore, 'games', gameId);
-            await updateDoc(gameRef, updatedCurrentGame);
-            // await updateDoc(gameRef, updatedGame);
-
-
-            console.log(`Game ${gameId} updated successfully`);
-        } catch (error) {
-            console.error("Error updating game: ", error);
-        }
-    },
-    addGame: async (newGame: Omit<GameData, 'id'>) => {
-        try {
-            const docRef = await addDoc(collection(firestore, 'games'), newGame);
-            await updateDoc(doc(firestore, 'games', docRef.id), { id: docRef.id });
+            const docRef = doc(firestore, 'games', newGame.id);
+            await setDoc(docRef, newGame);
             console.log(`Game ${docRef.id} added successfully`);
             return docRef.id;
         } catch (error) {

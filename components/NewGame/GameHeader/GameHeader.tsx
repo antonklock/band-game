@@ -2,21 +2,32 @@ import { Button, Text, View, StyleSheet } from "react-native";
 import CountDown from "./CountDown";
 import VersusBar from "./VersusBar";
 import { useGameStore } from "../../../stores/gameStore";
+import { useGame } from "../../../hooks/useGame";
 
 type GameHeaderProps = {
   navigation: any;
+  gameId: string;
 };
 
 const GameHeader = (props: GameHeaderProps) => {
-  const { navigation } = props;
+  const { navigation, gameId } = props;
 
-  const gameData = useGameStore((state) => state);
+  // const gameData = useGameStore((state) => state);
+  const game = useGame(gameId).game;
 
-  const roundStarted = gameData.gameStarted;
+  if (!game) {
+    return (
+      <View>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  const roundStarted = game.gameStarted;
 
   return (
     <View style={styles.gameHeader}>
-      <VersusBar />
+      <VersusBar gameId={gameId} />
       {roundStarted && (
         <>
           <View style={styles.navBar}>

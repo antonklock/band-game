@@ -14,7 +14,6 @@ interface Band {
     name: string;
     guesser: GuesserType;
     status: BandStatus;
-    guessId: string;
 }
 
 interface GameData {

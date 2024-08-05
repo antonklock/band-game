@@ -53,12 +53,8 @@ export default function NewGame({ navigation }: { navigation: any }) {
   //   };
   // }, []);
 
-  // const newGameId = uuid.v4() as string;
   const [gameId, setGameId] = useState(() => uuid.v4() as string);
-
-  // const { game, loading } = useGame(newGameId);
   const { updateGame } = useGameStore();
-
   const { game, loading, error } = useGame(gameId);
 
   if (loading) {
@@ -85,9 +81,19 @@ export default function NewGame({ navigation }: { navigation: any }) {
     );
   } else {
     return (
-      <View style={styles.centeredContainer}>
-        <Text style={styles.whiteText}>Game found!</Text>
-      </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+      >
+        <GameHeader navigation={navigation} gameId={game.id} />
+
+        {/* <GameContent /> */}
+        {game?.gameStarted ? (
+          <ChatInput gameId={gameId} />
+        ) : (
+          <StartRoundButton gameId={gameId} navigation={navigation} />
+        )}
+      </KeyboardAvoidingView>
     );
   }
 
@@ -150,16 +156,16 @@ export default function NewGame({ navigation }: { navigation: any }) {
     updateGame(game.id, (game) => ({ ...game, gameStarted: true }));
   };
 
-  const isWaitingOnOpponent = () => {
-    if (!game) {
-      console.error("No game found!");
-      return false;
-    }
-    if (game.bands.length === 0) return false;
-    const lastBand = game.bands[game.bands.length - 1];
-    if (lastBand.guesser === "awayPlayer") return false;
-    return true;
-  };
+  // const isWaitingOnOpponent = () => {
+  //   if (!game) {
+  //     console.error("No game found!");
+  //     return false;
+  //   }
+  //   if (game.bands.length === 0) return false;
+  //   const lastBand = game.bands[game.bands.length - 1];
+  //   if (lastBand.guesser === "awayPlayer") return false;
+  //   return true;
+  // };
 
   return (
     <KeyboardAvoidingView

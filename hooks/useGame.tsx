@@ -30,8 +30,18 @@ export function useGame(gameId: string) {
             gameStarted: false,
             inputBandName: "",
             players: {
-              homePlayer: { id: "", name: "", score: 0, strikes: 0 },
-              awayPlayer: { id: "", name: "", score: 0, strikes: 0 },
+              homePlayer: {
+                id: "homeID",
+                name: "Home Player",
+                score: 0,
+                strikes: 0,
+              },
+              awayPlayer: {
+                id: "awayID",
+                name: "Away Player",
+                score: 0,
+                strikes: 0,
+              },
             },
           };
           await setDoc(gameRef, newGame);

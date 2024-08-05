@@ -1,16 +1,39 @@
 import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import { useGameStore } from "../../stores/gameStore";
+import { useGame } from "../../hooks/useGame";
 
 type StartRoundButtonProps = {
-  setRoundStarted: (roundStarted: boolean) => void;
+  gameId: string;
   navigation: any;
-  waiting: boolean;
 };
 
 export default function StartRoundButton(props: StartRoundButtonProps) {
-  const { setRoundStarted, waiting, navigation } = props;
+  const { navigation, gameId } = props;
+
+  const game = useGame(gameId).game;
+
+  const isWaitingOnOpponent = () => {
+    if (!game) {
+      console.error("No game found!");
+      return false;
+    }
+    if (game.bands.length === 0) return false;
+    const lastBand = game.bands[game.bands.length - 1];
+    if (lastBand.guesser === "awayPlayer") return false;
+    return true;
+  };
+
+  const handleSetRoundStarted = (newRoundStarted: boolean) => {
+    const { updateGame } = useGameStore();
+    updateGame(gameId, (game) => {
+      game.gameStarted = newRoundStarted;
+      return game;
+    });
+  };
+
   return (
     <>
-      {waiting ? (
+      {isWaitingOnOpponent() ? (
         <View style={styles.waitingButtonView}>
           <TouchableOpacity style={styles.waitingButton} disabled={true}>
             <Text style={styles.text}>Waiting for opponent to answer...</Text>
@@ -22,7 +45,7 @@ export default function StartRoundButton(props: StartRoundButtonProps) {
           <TouchableOpacity
             style={styles.startButton}
             onPress={() => {
-              setRoundStarted(true);
+              handleSetRoundStarted(true);
             }}
           >
             <Text style={styles.text}>{"Yes"}</Text>

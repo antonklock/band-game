@@ -18,24 +18,32 @@ import { useGame } from "../../../hooks/useGame";
 
 type ChatInputProps = {
   gameId: string;
-  setInputBandName: (inputBandName: string) => void;
-  inputBandName: string;
-  handleAddNewBand: (
-    bandName: string,
-    player: GuesserType,
-    guessId: string
-  ) => void;
 };
 
 const ChatInput = (props: ChatInputProps) => {
-  const { setInputBandName, inputBandName, handleAddNewBand } = props;
-
-  // const gameData = useGameStore((state) => state);
-
   const { gameId } = props;
 
+  const [inputBandName, setInputBandName] = useState("");
+  const handleAddNewBand = (bandName: string) => {
+    const guessId = uuid.v4() as string;
+
+    updateGame(gameId, (game) => {
+      game.bands.push({
+        id: guessId,
+        name: bandName,
+        guesser: "homePlayer",
+        status: "validating",
+      });
+      return game;
+    });
+
+    return guessId;
+  };
+
+  // TODO: Do we really need a useGameStore and a useGame??
+  const { updateGame } = useGameStore();
   const gameData = useGame(gameId);
-  const game = gameData.game;
+  const { game } = gameData;
 
   const inputRef = useRef<TextInput>(null);
   const [theWord, setTheWord] = useState("");
@@ -98,25 +106,44 @@ const ChatInput = (props: ChatInputProps) => {
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
 
-    const guessId = uuid.v4() as string;
-    handleAddNewBand(guessBandName, player, guessId);
+    const newGuessId = handleAddNewBand(guessBandName);
 
     const guessIsValid = await isValidBandName(guessBandName);
 
     setInputBandName("");
 
     const timeout = setTimeout(() => {
-      updateBandStatus(guessId, guessIsValid ? "valid" : "invalid");
+      // updateBandStatus(newGuessId, guessIsValid ? "valid" : "invalid");
+
+      updateGame(gameId, (game) => {
+        // TODO: Write a proper update band status function in the store
+        const guessToUpdate = game.bands.find((band) => band.id === newGuessId);
+        if (!guessToUpdate) {
+          console.warn("Guess not found!");
+          return game;
+        }
+        guessToUpdate.status = guessIsValid ? "valid" : "invalid";
+
+        const updatedGame = {
+          ...game,
+          bands: game.bands.map((band) => {
+            if (band.id === newGuessId) {
+              return guessToUpdate;
+            }
+            return band;
+          }),
+        };
+        return updatedGame;
+      });
 
       if (!guessIsValid) {
         handleInvalidGuess();
       } else {
-        gameData.updateGameAndSync((gameData) => {
-          gameData.currentTurn = "awayPlayer";
-          gameData.currentBandName = guessBandName;
-          return gameData;
+        updateGame(gameId, (game) => {
+          game.currentTurn = "awayPlayer" as GuesserType;
+          game.currentBandName = guessBandName;
+          return game;
         });
-        // setCurrentBandName(guessId);
         inputRef.current?.clear();
         inputRef.current?.blur();
       }

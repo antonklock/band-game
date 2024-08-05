@@ -10,11 +10,11 @@ interface Player {
 }
 
 interface Band {
+    id: string;
     name: string;
     guesser: GuesserType;
     status: BandStatus;
     guessId: string;
-    setStatus: (status: BandStatus) => void;
 }
 
 interface GameData {

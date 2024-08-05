@@ -1,5 +1,11 @@
 import React, { useEffect } from "react";
-import { StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  View,
+} from "react-native";
 import { useState } from "react";
 import StartRoundButton from "./StartRoundButton";
 import ChatInput from "./ChatInput/ChatInput";
@@ -7,59 +13,98 @@ import GameContent from "./GameContent";
 import GameHeader from "./GameHeader/GameHeader";
 import { getAiResponse } from "../../utils/GameAI/GameAiPlayer";
 import { searchLastFM } from "../../api/lastFM/lastFM";
-import { useGameStore } from "../../stores/gameStore";
 import uuid from "react-native-uuid";
 import { handleAddNewBand } from "./handleAddBand";
 import { setCurrentBandName } from "../../stores/gameStoreFunctions";
+import { useGame } from "../../hooks/useGame";
+import { useGameStore } from "../../stores/gameStore";
 
 export default function NewGame({ navigation }: { navigation: any }) {
   // DEBUG: Adding first message - A random band name
-  useEffect(() => {
-    async function getNewBand() {
-      try {
-        const randomLetter = String.fromCharCode(
-          65 + Math.floor(Math.random() * 26)
-        );
-        const newBands = await searchLastFM(randomLetter);
-        const newBand = newBands[Math.floor(Math.random() * newBands.length)]
-          .split(" ")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
+  // useEffect(() => {
+  //   async function getNewBand() {
+  //     try {
+  //       const randomLetter = String.fromCharCode(
+  //         65 + Math.floor(Math.random() * 26)
+  //       );
+  //       const newBands = await searchLastFM(randomLetter);
+  //       const newBand = newBands[Math.floor(Math.random() * newBands.length)]
+  //         .split(" ")
+  //         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+  //         .join(" ");
 
-        const guessId = uuid.v4() as string;
-        handleAddNewBand(newBand, "awayPlayer", guessId);
-        setCurrentBandName(guessId);
-      } catch (error) {
-        console.error("Failed to fetch new band", error);
-      }
-    }
+  //       const guessId = uuid.v4() as string;
+  //       handleAddNewBand(newBand, "awayPlayer", guessId);
+  //       setCurrentBandName(guessId);
+  //     } catch (error) {
+  //       console.error("Failed to fetch new band", error);
+  //     }
+  //   }
 
-    getNewBand();
+  //   // getNewBand();
 
-    return () => {
-      // Resetting the game store when leaving the match
-      useGameStore.setState({
-        bands: [],
-        currentBandName: "",
-        gameStarted: false,
-      });
-    };
-  }, []);
+  //   return () => {
+  //     // Resetting the game store when leaving the match
+  //     // useGameStore.setState({
+  //     //   bands: [],
+  //     //   currentBandName: "",
+  //     //   gameStarted: false,
+  //     // });
+  //   };
+  // }, []);
+
+  // const newGameId = uuid.v4() as string;
+  const [gameId, setGameId] = useState(() => uuid.v4() as string);
+
+  // const { game, loading } = useGame(newGameId);
+  const { updateGame } = useGameStore();
+
+  const { game, loading, error } = useGame(gameId);
+
+  if (loading) {
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.whiteText}>Loading game...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.whiteText}>Error: {error}</Text>
+      </View>
+    );
+  }
+
+  if (!game) {
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.whiteText}>No game found...</Text>
+      </View>
+    );
+  } else {
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.whiteText}>Game found!</Text>
+      </View>
+    );
+  }
 
   const [inputBandName, setInputBandName] = useState("");
-  const gameData = useGameStore((state) => state);
 
   useEffect(() => {
-    if (gameData.bands.length === 0) return;
+    if (!game) return;
+    if (game.bands.length === 0) return;
 
-    const lastBand = gameData.bands[gameData.bands.length - 1];
+    const lastBand = game.bands[game.bands.length - 1];
 
     if (lastBand.guesser === "homePlayer" && lastBand.status === "valid") {
       const randomTimeoutTime = Math.floor(Math.random() * 6000) + 1000;
 
       const fetchAndAddBand = async () => {
         try {
-          const lastLetter = gameData.currentBandName.slice(-1);
+          const lastLetter = game.currentBandName.slice(-1);
           const searchResults = await searchLastFM(lastLetter);
 
           let newBand = "";
@@ -90,7 +135,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
       };
 
       const timeoutId = setTimeout(() => {
-        if (gameData.currentBandName) {
+        if (game.currentBandName) {
           return fetchAndAddBand();
         } else {
           return getAiResponse();
@@ -99,15 +144,19 @@ export default function NewGame({ navigation }: { navigation: any }) {
 
       return () => clearTimeout(timeoutId);
     }
-  }, [gameData.bands]);
+  }, [game?.bands]);
 
   const handleSetRoundStarted = () => {
-    useGameStore.setState({ gameStarted: true });
+    updateGame(game.id, (game) => ({ ...game, gameStarted: true }));
   };
 
   const isWaitingOnOpponent = () => {
-    if (gameData.bands.length === 0) return false;
-    const lastBand = gameData.bands[gameData.bands.length - 1];
+    if (!game) {
+      console.error("No game found!");
+      return false;
+    }
+    if (game.bands.length === 0) return false;
+    const lastBand = game.bands[game.bands.length - 1];
     if (lastBand.guesser === "awayPlayer") return false;
     return true;
   };
@@ -120,8 +169,9 @@ export default function NewGame({ navigation }: { navigation: any }) {
       <GameHeader navigation={navigation} />
 
       <GameContent />
-      {gameData.gameStarted ? (
+      {game?.gameStarted ? (
         <ChatInput
+          gameId={gameId}
           setInputBandName={setInputBandName}
           inputBandName={inputBandName}
           handleAddNewBand={handleAddNewBand}
@@ -196,5 +246,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
+  },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  whiteText: {
+    color: "white",
   },
 });

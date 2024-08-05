@@ -14,8 +14,10 @@ import {
   updateBandStatus,
 } from "../../../stores/gameStoreFunctions";
 import { GuesserType } from "../../../types";
+import { useGame } from "../../../hooks/useGame";
 
 type ChatInputProps = {
+  gameId: string;
   setInputBandName: (inputBandName: string) => void;
   inputBandName: string;
   handleAddNewBand: (
@@ -28,7 +30,12 @@ type ChatInputProps = {
 const ChatInput = (props: ChatInputProps) => {
   const { setInputBandName, inputBandName, handleAddNewBand } = props;
 
-  const gameData = useGameStore((state) => state);
+  // const gameData = useGameStore((state) => state);
+
+  const { gameId } = props;
+
+  const gameData = useGame(gameId);
+  const game = gameData.game;
 
   const inputRef = useRef<TextInput>(null);
   const [theWord, setTheWord] = useState("");
@@ -46,7 +53,12 @@ const ChatInput = (props: ChatInputProps) => {
   };
 
   useEffect(() => {
-    const currentBandNameLastLetter = gameData.currentBandName
+    if (!game) {
+      console.warn("Game not found!");
+      return;
+    }
+
+    const currentBandNameLastLetter = game.currentBandName
       .slice(-1)
       .toLowerCase();
 
@@ -99,8 +111,12 @@ const ChatInput = (props: ChatInputProps) => {
       if (!guessIsValid) {
         handleInvalidGuess();
       } else {
-        useGameStore.setState({ gameStarted: false });
-        setCurrentBandName(guessId);
+        gameData.updateGameAndSync((gameData) => {
+          gameData.currentTurn = "awayPlayer";
+          gameData.currentBandName = guessBandName;
+          return gameData;
+        });
+        // setCurrentBandName(guessId);
         inputRef.current?.clear();
         inputRef.current?.blur();
       }
@@ -138,9 +154,13 @@ const ChatInput = (props: ChatInputProps) => {
   //TODO: Clean this up
   const styleWordThe = (inputBandName: string) => {
     if (!inputBandName) return { color: "black" };
-    const currentBandNameLength = gameData.currentBandName.length;
+    if (!game) {
+      console.warn("Game not found!");
+      return { color: "black" };
+    }
+    const currentBandNameLength = game?.currentBandName.length;
     const currentBandNameLastLetter =
-      gameData.currentBandName[currentBandNameLength - 1].toLowerCase();
+      game?.currentBandName[currentBandNameLength - 1].toLowerCase();
     const inputBandNameFirstLetter = inputBandName[0].toLowerCase();
 
     if (inputBandNameFirstLetter === "T" || inputBandNameFirstLetter === "t") {

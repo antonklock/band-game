@@ -6,18 +6,16 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import { useActiveGameStore } from "../../stores/activeGamesStore";
 import { useEffect, useState } from "react";
 import { auth } from "../../firebaseConfig";
 import { User } from "firebase/auth";
 import { getRandomBandName } from "../../utils/GameAI/exampleBandNames";
+import { useGameList } from "../../hooks/useGameList";
+import { useGameStore } from "../../stores/gameStore";
 
 export default function OngoingGames({ navigation }: { navigation: any }) {
-  // const games = useActiveGameStore((state) => state.games);
-  // const removeGame = useActiveGameStore((state) => state.removeGame);
-  // const addGame = useActiveGameStore((state) => state.addGame);
-
-  const { games, removeGame, addGame, updateGame } = useActiveGameStore();
+  const games = useGameList();
+  const { updateGame, removeGame } = useGameStore();
 
   // TODO: Change to use a store instead of useState
   const [user, setUser] = useState<User | null>(null);
@@ -35,24 +33,10 @@ export default function OngoingGames({ navigation }: { navigation: any }) {
   };
 
   const handleUpdateGame = (gameId: string) => {
-    const gameRef = games.find((game) => game.id === gameId);
-    if (gameRef)
-      updateGame(gameId, { ...gameRef, currentBandName: getRandomBandName() });
-  };
-
-  const handleAddGame = () => {
-    addGame({
-      id: "",
-      players: {
-        homePlayer: { id: "123", name: "Home Player", score: 0, strikes: 0 },
-        awayPlayer: { id: "456", name: "Away Player", score: 0, strikes: 0 },
-      },
-      bands: [],
+    updateGame(gameId, (game) => ({
+      ...game,
       currentBandName: getRandomBandName(),
-      inputBandName: "Input Band Name",
-      gameStarted: false,
-      currentTurn: "homePlayer",
-    });
+    }));
   };
 
   return (
@@ -102,14 +86,6 @@ export default function OngoingGames({ navigation }: { navigation: any }) {
                 </View>
               )}
             />
-          </View>
-          <View>
-            <TouchableOpacity
-              style={styles.addNewGameButton}
-              onPress={handleAddGame}
-            >
-              <Text style={{ color: "white" }}>Add New Game</Text>
-            </TouchableOpacity>
           </View>
         </>
       )}

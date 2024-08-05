@@ -1,28 +1,38 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Strikes from "./PointMarker";
-import { useGameStore } from "../../../stores/gameStore";
+import { useGame } from "../../../hooks/useGame";
+import { PlayerStrike } from "../../../types";
 
-const VersusBar = () => {
-  const { homePlayer: player, awayPlayer: opponent } = useGameStore(
-    (state) => state.players
-  );
-  const { name: playerName } = player;
-  const { name: opponentName } = opponent;
-  const { strikes: playerStrikes } = player;
-  const { strikes: opponentStrikes } = opponent;
+type VersusBarProps = {
+  gameId: string;
+};
+
+const VersusBar = (props: VersusBarProps) => {
+  const { gameId } = props;
+  const { game, loading } = useGame(gameId);
+  const players = game?.players;
+
   return (
     <View style={styles.versusBar}>
       <View style={styles.versusView}>
-        <Text style={styles.text}>{playerName}</Text>
-        <Strikes strikes={playerStrikes} />
+        <Text style={styles.text}>
+          {loading ? "Loading..." : players?.homePlayer.name}
+        </Text>
+        <Strikes
+          strikes={loading ? 0 : (players?.homePlayer.strikes as PlayerStrike)}
+        />
       </View>
       <View style={styles.versusView}>
         <Text style={styles.text}>VS.</Text>
       </View>
       <View style={styles.versusView}>
-        <Text style={styles.text}>{opponentName}</Text>
-        <Strikes strikes={opponentStrikes} />
+        <Text style={styles.text}>
+          {loading ? "Loading..." : players?.awayPlayer.name}
+        </Text>
+        <Strikes
+          strikes={loading ? 0 : (players?.homePlayer.strikes as PlayerStrike)}
+        />
       </View>
     </View>
   );

@@ -9,6 +9,7 @@ type StartRoundButtonProps = {
 
 export default function StartRoundButton(props: StartRoundButtonProps) {
   const { navigation, gameId } = props;
+  const { updateGame } = useGameStore();
 
   const game = useGame(gameId).game;
 
@@ -17,14 +18,13 @@ export default function StartRoundButton(props: StartRoundButtonProps) {
       console.error("No game found!");
       return false;
     }
-    if (game.bands.length === 0) return false;
-    const lastBand = game.bands[game.bands.length - 1];
+    if (game.previousGuesses.length === 0) return false;
+    const lastBand = game.previousGuesses[game.previousGuesses.length - 1];
     if (lastBand.guesser === "awayPlayer") return false;
     return true;
   };
 
   const handleSetRoundStarted = (newRoundStarted: boolean) => {
-    const { updateGame } = useGameStore();
     updateGame(gameId, (game) => {
       game.gameStarted = newRoundStarted;
       return game;

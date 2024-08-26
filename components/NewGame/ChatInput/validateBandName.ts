@@ -1,6 +1,8 @@
 import { searchLastFM } from "../../../api/lastFM/lastFM";
 import { logMatchingArtists } from "./logMatchingArtists";
 import { useGameStore } from "../../../stores/gameStore";
+import { useGame } from "../../../hooks/useGame";
+import { GameData } from "../../../types";
 
 const colors = {
     reset: "\x1b[0m",
@@ -9,14 +11,22 @@ const colors = {
     pink: "\x1b[35m",
 };
 
-export const isValidBandName = async (bandName: string) => {
+export const isValidBandName = async (bandName: string, gameId: string) => {
     try {
         const gameData = useGameStore.getState();
+        if (gameData.games.length < 1) throw new Error("Games array is empty!");
 
-        const currentBandName = gameData.currentBandName.trim().toLowerCase();
+        const currentGame = gameData.games.find((game) => game.id === gameId);
+        if (!currentGame) throw new Error("Couldn't find game with id: " + gameId);
+
+        const currentBandName = currentGame.currentBandName.trim().toLowerCase();
         const inputBandName = bandName.trim().toLowerCase();
 
         if (inputBandName.length === 0) return false;
+
+        // Check if the guess has already been guessed
+        const previousGuessesNames = currentGame.previousGuesses.map((guess) => guess.name);
+        if (previousGuessesNames.includes(inputBandName)) return false;
 
         const inputStartsWithThe = inputBandName.startsWith("the");
         const currentEndsWithT = currentBandName.endsWith("t");
@@ -34,7 +44,7 @@ export const isValidBandName = async (bandName: string) => {
             "<--"
         );
 
-        if (currentBandName.slice(-1) === processedBandName[0]) {
+        if (currentBandName.slice(-1) === processedBandName[0] || !currentBandName) {
             const matchingArtists = await searchLastFM(processedBandName);
             return checkIfBandNameExistsInList(matchingArtists, processedBandName);
         } else {

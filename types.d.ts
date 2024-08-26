@@ -21,7 +21,7 @@ interface GameData {
         homePlayer: Player;
         awayPlayer: Player;
     };
-    bands: Band[];
+    previousGuesses: Band[];
     currentBandName: string;
     inputBandName: string;
     gameStarted: boolean;

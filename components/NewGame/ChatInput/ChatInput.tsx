@@ -9,12 +9,9 @@ import {
 import { isValidBandName } from "./validateBandName";
 import { useGameStore } from "../../../stores/gameStore";
 import uuid from "react-native-uuid";
-import {
-  setCurrentBandName,
-  updateBandStatus,
-} from "../../../stores/gameStoreFunctions";
-import { GuesserType } from "../../../types";
+import { GuesserType as Guesser } from "../../../types";
 import { useGame } from "../../../hooks/useGame";
+import { getAiResponse } from "../../../utils/GameAI/GameAiPlayer";
 
 type ChatInputProps = {
   gameId: string;
@@ -24,14 +21,15 @@ const ChatInput = (props: ChatInputProps) => {
   const { gameId } = props;
 
   const [inputBandName, setInputBandName] = useState("");
-  const handleAddNewBand = (bandName: string) => {
+
+  const handleAddNewBand = (bandName: string, guesser: Guesser) => {
     const guessId = uuid.v4() as string;
 
     updateGame(gameId, (game) => {
-      game.bands.push({
+      game.previousGuesses.push({
         id: guessId,
         name: bandName,
-        guesser: "homePlayer",
+        guesser,
         status: "validating",
       });
       return game;
@@ -40,25 +38,25 @@ const ChatInput = (props: ChatInputProps) => {
     return guessId;
   };
 
-  // TODO: Do we really need a useGameStore and a useGame??
+  // TODO: Do we really need both useGameStore and a useGame??
   const { updateGame } = useGameStore();
   const gameData = useGame(gameId);
   const { game } = gameData;
 
   const inputRef = useRef<TextInput>(null);
-  const [theWord, setTheWord] = useState("");
+  // const [theWord, setTheWord] = useState("");
   const [currentGuess, setCurrentGuess] = useState("");
-  const [isCorrectLetter, setIsCorrectLetter] = useState(false);
+  // const [isCorrectLetter, setIsCorrectLetter] = useState(false);
 
-  const startsWithThe = (inputString: string): boolean => {
-    const lowercaseInput = inputString.toLowerCase().trim();
-    return (
-      lowercaseInput === "t" ||
-      lowercaseInput === "th" ||
-      lowercaseInput === "the" ||
-      lowercaseInput.startsWith("the ")
-    );
-  };
+  // const startsWithThe = (inputString: string): boolean => {
+  //   const lowercaseInput = inputString.toLowerCase().trim();
+  //   return (
+  //     lowercaseInput === "t" ||
+  //     lowercaseInput === "th" ||
+  //     lowercaseInput === "the" ||
+  //     lowercaseInput.startsWith("the ")
+  //   );
+  // };
 
   useEffect(() => {
     if (!game) {
@@ -66,49 +64,54 @@ const ChatInput = (props: ChatInputProps) => {
       return;
     }
 
-    const currentBandNameLastLetter = game.currentBandName
-      .slice(-1)
-      .toLowerCase();
+    if (!game.currentBandName) console.log("No currentBandName");
+    else console.log("currentBandName: ", game.currentBandName);
 
-    if (startsWithThe(inputBandName)) {
-      if (inputBandName.length >= 3) {
-        if (
-          inputBandName.substring(3, 5).toLowerCase() ===
-          " " + currentBandNameLastLetter
-        ) {
-          setIsCorrectLetter(true);
-          setTheWord(inputBandName.substring(0, 3));
-          setCurrentGuess(inputBandName.substring(3, inputBandName.length));
-        } else {
-          setIsCorrectLetter(false);
-          setTheWord(inputBandName.substring(0, 3));
-          setCurrentGuess(inputBandName.substring(3, inputBandName.length));
-        }
-      } else {
-        setIsCorrectLetter(false);
-        setTheWord(inputBandName);
-        setCurrentGuess("");
-      }
-    } else {
-      setTheWord("");
-      setCurrentGuess(inputBandName);
-    }
+    setCurrentGuess(inputBandName);
+
+    // const currentBandNameLastLetter = game.currentBandName
+    //   .slice(-1)
+    //   .toLowerCase();
+
+    // if (startsWithThe(inputBandName)) {
+    //   if (inputBandName.length >= 3) {
+    //     if (
+    //       inputBandName.substring(3, 5).toLowerCase() ===
+    //       " " + currentBandNameLastLetter
+    //     ) {
+    //       setIsCorrectLetter(true);
+    //       setTheWord(inputBandName.substring(0, 3));
+    //       setCurrentGuess(inputBandName.substring(3, inputBandName.length));
+    //     } else {
+    //       setIsCorrectLetter(false);
+    //       setTheWord(inputBandName.substring(0, 3));
+    //       setCurrentGuess(inputBandName.substring(3, inputBandName.length));
+    //     }
+    //   } else {
+    //     setIsCorrectLetter(false);
+    //     setTheWord(inputBandName);
+    //     setCurrentGuess("");
+    //   }
+    // } else {
+    //   setTheWord("");
+    //   setCurrentGuess(inputBandName);
+    // }
   }, [inputBandName]);
 
-  const handleNewGuess = async (guessBandName: string) => {
+  const handleNewGuess = async (guessBandName: string, guesser: Guesser) => {
     if (guessBandName.length === 0) return;
     guessBandName = guessBandName.trim();
 
-    const player = "homePlayer";
+    console.log("guessBandName: ", guessBandName);
 
     guessBandName = guessBandName
       .split(" ")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
 
-    const newGuessId = handleAddNewBand(guessBandName);
+    const newGuessId = handleAddNewBand(guessBandName, guesser);
 
-    const guessIsValid = await isValidBandName(guessBandName);
+    const guessIsValid = await isValidBandName(guessBandName, gameId);
 
     setInputBandName("");
 
@@ -117,7 +120,9 @@ const ChatInput = (props: ChatInputProps) => {
 
       updateGame(gameId, (game) => {
         // TODO: Write a proper update band status function in the store
-        const guessToUpdate = game.bands.find((band) => band.id === newGuessId);
+        const guessToUpdate = game.previousGuesses.find(
+          (band) => band.id === newGuessId
+        );
         if (!guessToUpdate) {
           console.warn("Guess not found!");
           return game;
@@ -126,12 +131,18 @@ const ChatInput = (props: ChatInputProps) => {
 
         const updatedGame = {
           ...game,
-          bands: game.bands.map((band) => {
+          previousGuesses: game.previousGuesses.map((band) => {
             if (band.id === newGuessId) {
               return guessToUpdate;
             }
             return band;
           }),
+          currentTurn:
+            guesser === "homePlayer"
+              ? ("awayPlayer" as Guesser)
+              : ("homePlayer" as Guesser),
+          currentBandName: guessBandName,
+          gameStarted: false,
         };
         return updatedGame;
       });
@@ -139,13 +150,24 @@ const ChatInput = (props: ChatInputProps) => {
       if (!guessIsValid) {
         handleInvalidGuess();
       } else {
-        updateGame(gameId, (game) => {
-          game.currentTurn = "awayPlayer" as GuesserType;
-          game.currentBandName = guessBandName;
-          return game;
-        });
         inputRef.current?.clear();
         inputRef.current?.blur();
+
+        // AI ANSWER
+        if (guesser == "homePlayer") {
+          const randomTime = Math.random() * 3000 + 1000;
+          console.log(`randomTime: ${randomTime}`);
+
+          setTimeout(() => {
+            const previousGuesses = game?.previousGuesses.map(
+              (guess) => guess.name
+            );
+
+            if (!previousGuesses) return;
+            const aiGuess = getAiResponse(guessBandName, previousGuesses);
+            if (aiGuess) handleNewGuess(aiGuess, "awayPlayer");
+          }, randomTime);
+        }
       }
       clearInterval(timeout);
     }, Math.random() * 3000 + 1000);
@@ -204,11 +226,13 @@ const ChatInput = (props: ChatInputProps) => {
       <TextInput
         ref={inputRef}
         autoFocus={true}
-        style={{ ...styles.textInput, ...styleWordThe(inputBandName) }}
+        // style={{ ...styles.textInput, ...styleWordThe(inputBandName) }}
+        style={{ ...styles.textInput }}
         placeholder="Enter band name"
         onChangeText={(text) => handleSetInputBandName(text)}
       >
-        {theWord ? (
+        {currentGuess}
+        {/* {theWord ? (
           <>
             {isCorrectLetter ? (
               <>
@@ -224,12 +248,13 @@ const ChatInput = (props: ChatInputProps) => {
           </>
         ) : (
           <Text>{inputBandName}</Text>
-        )}
+        )} */}
       </TextInput>
       <TouchableOpacity
         style={styles.submitButton}
         onPress={() => {
-          handleNewGuess(inputBandName);
+          // TODO: Make sure the guesser is correct here. If the local player is the awayPlayer this will be wrong.
+          handleNewGuess(inputBandName, "homePlayer");
         }}
       >
         <Text style={styles.text}>Submit</Text>

@@ -24,7 +24,7 @@ export function useGame(gameId: string) {
           console.log("Game not found, creating new game");
           const newGame: GameData = {
             id: gameId,
-            bands: [],
+            previousGuesses: [],
             currentBandName: "",
             currentTurn: "homePlayer",
             gameStarted: false,
@@ -49,7 +49,7 @@ export function useGame(gameId: string) {
           console.log("New game created:", newGame);
         } else {
           const gameData = docSnap.data() as GameData;
-          console.log("Game found:", gameData);
+          // console.log("Game found:", gameData);
           setGame(gameData);
         }
       } catch (err) {
@@ -65,7 +65,7 @@ export function useGame(gameId: string) {
     const unsubscribe = onSnapshot(gameRef, (doc) => {
       if (doc.exists()) {
         const data = doc.data() as GameData;
-        console.log("Game updated:", data);
+        // console.log("Game updated:", data);
         setGame(data);
         setError(null);
         setLoading(false);

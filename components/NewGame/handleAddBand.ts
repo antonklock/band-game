@@ -6,6 +6,8 @@ export const handleAddNewBand = (
     player: GuesserType,
     guessId: string
 ) => {
+
+    console.log("bandName: ", bandName);
     bandName = bandName.trim();
 
     if (player === "awayPlayer") {

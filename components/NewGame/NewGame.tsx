@@ -15,7 +15,7 @@ import { getAiResponse } from "../../utils/GameAI/GameAiPlayer";
 import { searchLastFM } from "../../api/lastFM/lastFM";
 import uuid from "react-native-uuid";
 import { handleAddNewBand } from "./handleAddBand";
-import { setCurrentBandName } from "../../stores/gameStoreFunctions";
+// import { setCurrentBandName } from "../../stores/gameStoreFunctions";
 import { useGame } from "../../hooks/useGame";
 import { useGameStore } from "../../stores/gameStore";
 
@@ -87,7 +87,7 @@ export default function NewGame({ navigation }: { navigation: any }) {
       >
         <GameHeader navigation={navigation} gameId={game.id} />
 
-        {/* <GameContent /> */}
+        <GameContent gameId={gameId} />
         {game?.gameStarted ? (
           <ChatInput gameId={gameId} />
         ) : (
@@ -96,101 +96,6 @@ export default function NewGame({ navigation }: { navigation: any }) {
       </KeyboardAvoidingView>
     );
   }
-
-  const [inputBandName, setInputBandName] = useState("");
-
-  useEffect(() => {
-    if (!game) return;
-    if (game.bands.length === 0) return;
-
-    const lastBand = game.bands[game.bands.length - 1];
-
-    if (lastBand.guesser === "homePlayer" && lastBand.status === "valid") {
-      const randomTimeoutTime = Math.floor(Math.random() * 6000) + 1000;
-
-      const fetchAndAddBand = async () => {
-        try {
-          const lastLetter = game.currentBandName.slice(-1);
-          const searchResults = await searchLastFM(lastLetter);
-
-          let newBand = "";
-          for (
-            let i = Math.floor(Math.random() * searchResults.length);
-            i < searchResults.length;
-            i++
-          ) {
-            if (searchResults[i][0] === lastLetter) {
-              newBand = searchResults[i];
-
-              newBand = newBand
-                .split(" ")
-                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(" ");
-
-              console.log("New band: ", newBand);
-
-              const guessId = uuid.v4() as string;
-              handleAddNewBand(newBand, "awayPlayer", guessId);
-              setCurrentBandName(guessId);
-              break;
-            }
-          }
-        } catch (error) {
-          console.error("Failed to fetch new band", error);
-        }
-      };
-
-      const timeoutId = setTimeout(() => {
-        if (game.currentBandName) {
-          return fetchAndAddBand();
-        } else {
-          return getAiResponse();
-        }
-      }, randomTimeoutTime);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [game?.bands]);
-
-  const handleSetRoundStarted = () => {
-    updateGame(game.id, (game) => ({ ...game, gameStarted: true }));
-  };
-
-  // const isWaitingOnOpponent = () => {
-  //   if (!game) {
-  //     console.error("No game found!");
-  //     return false;
-  //   }
-  //   if (game.bands.length === 0) return false;
-  //   const lastBand = game.bands[game.bands.length - 1];
-  //   if (lastBand.guesser === "awayPlayer") return false;
-  //   return true;
-  // };
-
-  return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
-      <GameHeader navigation={navigation} />
-
-      <GameContent />
-      {game?.gameStarted ? (
-        <ChatInput
-          gameId={gameId}
-          setInputBandName={setInputBandName}
-          inputBandName={inputBandName}
-          handleAddNewBand={handleAddNewBand}
-        />
-      ) : (
-        <StartRoundButton
-          navigation={navigation}
-          waiting={isWaitingOnOpponent()}
-          setRoundStarted={handleSetRoundStarted}
-        />
-      )}
-    </KeyboardAvoidingView>
-  );
 }
 
 const styles = StyleSheet.create({

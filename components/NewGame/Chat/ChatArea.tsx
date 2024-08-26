@@ -9,7 +9,6 @@ type ChatAreaProps = {
 };
 
 const ChatArea = (props: ChatAreaProps) => {
-  // const gameData = useGameStore((state) => state);
   const { gameId } = props;
   const gameData = useGame(gameId);
   const game = gameData.game;
@@ -17,17 +16,19 @@ const ChatArea = (props: ChatAreaProps) => {
   const scrollViewRef = useRef<ScrollView>(null);
   return (
     <ScrollView ref={scrollViewRef} contentContainerStyle={styles.chatArea}>
-      {game?.bands.map((band, index) => {
+      {game?.previousGuesses.map((band, index) => {
         return (
           <View key={"chatMessage_" + index} style={{ width: "100%" }}>
-            {index === game?.bands.length - 1 &&
+            {index === game?.previousGuesses.length - 1 &&
               band.guesser === "awayPlayer" && (
                 <Text key={index + "_text"} style={styles.latestGuessText}>
                   Start round to see last message
                 </Text>
               )}
             <Message
-              hidden={!game.gameStarted && index === game.bands.length - 1}
+              hidden={
+                !game.gameStarted && index === game.previousGuesses.length - 1
+              }
               key={index}
               message={band.name}
               guesser={band.guesser}

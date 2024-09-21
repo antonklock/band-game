@@ -64,8 +64,8 @@ const ChatInput = (props: ChatInputProps) => {
       return;
     }
 
-    if (!game.currentBandName) console.log("No currentBandName");
-    else console.log("currentBandName: ", game.currentBandName);
+    // if (!game.currentBandName) console.log("No currentBandName");
+    // else console.log("currentBandName: ", game.currentBandName);
 
     setCurrentGuess(inputBandName);
 
@@ -128,6 +128,15 @@ const ChatInput = (props: ChatInputProps) => {
           return game;
         }
         guessToUpdate.status = guessIsValid ? "valid" : "invalid";
+        const nextGuesser = guessIsValid
+          ? guesser === "homePlayer"
+            ? ("awayPlayer" as Guesser)
+            : ("homePlayer" as Guesser)
+          : guesser === "homePlayer"
+          ? ("homePlayer" as Guesser)
+          : ("awayPlayer" as Guesser);
+
+        console.log("nextGuesser: ", nextGuesser);
 
         const updatedGame = {
           ...game,
@@ -137,10 +146,7 @@ const ChatInput = (props: ChatInputProps) => {
             }
             return band;
           }),
-          currentTurn:
-            guesser === "homePlayer"
-              ? ("awayPlayer" as Guesser)
-              : ("homePlayer" as Guesser),
+          currentTurn: nextGuesser,
           currentBandName: guessBandName,
           gameStarted: false,
         };

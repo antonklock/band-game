@@ -1,6 +1,6 @@
 import { ScrollView, View, Text, StyleSheet } from "react-native";
 import Message from "./Message";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useGameStore } from "../../../stores/gameStore";
 import { useGame } from "../../../hooks/useGame";
 
@@ -14,6 +14,11 @@ const ChatArea = (props: ChatAreaProps) => {
   const game = gameData.game;
 
   const scrollViewRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  }, [game?.previousGuesses]);
+
   return (
     <ScrollView ref={scrollViewRef} contentContainerStyle={styles.chatArea}>
       {game?.previousGuesses.map((band, index) => {

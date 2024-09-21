@@ -13,7 +13,7 @@ export function useGame(gameId: string) {
   const setGame = useGameStore((state) => state.setGame);
 
   useEffect(() => {
-    console.log(`useEffect running for gameId: ${gameId}`);
+    // console.log(`useEffect running for gameId: ${gameId}`);
     const gameRef = doc(firestore, "games", gameId);
 
     const fetchOrCreateGame = async () => {
@@ -76,7 +76,7 @@ export function useGame(gameId: string) {
     });
 
     return () => {
-      console.log(`Cleaning up for gameId: ${gameId}`);
+      // console.log(`Cleaning up for gameId: ${gameId}`);
       unsubscribe();
     };
   }, [gameId, setGame]);

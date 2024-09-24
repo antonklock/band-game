@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, TextInput, Button, Text, StyleSheet } from "react-native";
 import { loginUser } from "../../firebase/auth";
-import GoogleLogin from "./GoogleLogin";
+// import GoogleLogin from "./GoogleLogin";
 
 export default function LoginScreen({ navigation }: { navigation: any }) {
   const [email, setEmail] = useState("");
@@ -21,8 +21,8 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
 
   return (
     <View style={styles.container}>
-      <GoogleLogin navigation={navigation} />
-      {/* <TextInput
+      {/* <GoogleLogin navigation={navigation} /> */}
+      <TextInput
         style={styles.input}
         placeholder="Email"
         value={email}
@@ -34,7 +34,7 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-      /> */}
+      />
       <Button title="Login" onPress={handleLogin} />
       <Button title="Back" onPress={() => navigation.navigate("Home")} />
       {error && <Text style={styles.text}>{error}</Text>}

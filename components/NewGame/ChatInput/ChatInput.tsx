@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Text,
 } from "react-native";
-import { isValidBandName } from "./validateBandName";
+import { isValidBand } from "./validateBandName";
 import { useGameStore } from "../../../stores/gameStore";
 import uuid from "react-native-uuid";
 import { GuesserType as Guesser } from "../../../types";
@@ -20,7 +20,7 @@ type ChatInputProps = {
 const ChatInput = (props: ChatInputProps) => {
   const { gameId } = props;
 
-  const [inputBandName, setInputBandName] = useState("");
+  const [inputBand, setInputBand] = useState({ name: "", listeners: "0" });
 
   const handleAddNewBand = (bandName: string, guesser: Guesser) => {
     const guessId = uuid.v4() as string;
@@ -45,7 +45,10 @@ const ChatInput = (props: ChatInputProps) => {
 
   const inputRef = useRef<TextInput>(null);
   // const [theWord, setTheWord] = useState("");
-  const [currentGuess, setCurrentGuess] = useState("");
+  const [currentGuess, setCurrentGuess] = useState({
+    name: "",
+    listeners: "0",
+  });
   // const [isCorrectLetter, setIsCorrectLetter] = useState(false);
 
   // const startsWithThe = (inputString: string): boolean => {
@@ -67,7 +70,7 @@ const ChatInput = (props: ChatInputProps) => {
     // if (!game.currentBandName) console.log("No currentBandName");
     // else console.log("currentBandName: ", game.currentBandName);
 
-    setCurrentGuess(inputBandName);
+    setCurrentGuess(inputBand);
 
     // const currentBandNameLastLetter = game.currentBandName
     //   .slice(-1)
@@ -96,24 +99,27 @@ const ChatInput = (props: ChatInputProps) => {
     //   setTheWord("");
     //   setCurrentGuess(inputBandName);
     // }
-  }, [inputBandName]);
+  }, [inputBand]);
 
-  const handleNewGuess = async (guessBandName: string, guesser: Guesser) => {
-    if (guessBandName.length === 0) return;
-    guessBandName = guessBandName.trim();
+  const handleNewGuess = async (
+    guessBand: { name: string; listeners: string },
+    guesser: Guesser
+  ) => {
+    if (guessBand.name.length === 0) return;
+    let guessBandName = guessBand.name.trim();
 
-    console.log("guessBandName: ", guessBandName);
+    console.log("guessBandName: ", guessBand.name);
 
     guessBandName = guessBandName
       .split(" ")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
 
-    const newGuessId = handleAddNewBand(guessBandName, guesser);
+    const newGuessId = handleAddNewBand(guessBand.name, guesser);
 
-    const guessIsValid = await isValidBandName(guessBandName, gameId);
+    const guessIsValid = await isValidBand(guessBand, gameId);
 
-    setInputBandName("");
+    setInputBand({ name: "", listeners: "0" });
 
     const timeout = setTimeout(() => {
       // updateBandStatus(newGuessId, guessIsValid ? "valid" : "invalid");
@@ -171,7 +177,11 @@ const ChatInput = (props: ChatInputProps) => {
 
             if (!previousGuesses) return;
             const aiGuess = getAiResponse(guessBandName, previousGuesses);
-            if (aiGuess) handleNewGuess(aiGuess, "awayPlayer");
+            if (aiGuess)
+              handleNewGuess(
+                { name: aiGuess, listeners: "1000000" },
+                "awayPlayer"
+              );
           }, randomTime);
         }
       }
@@ -179,8 +189,11 @@ const ChatInput = (props: ChatInputProps) => {
     }, Math.random() * 3000 + 1000);
   };
 
-  const handleSetInputBandName = (inputBandName: string) => {
-    setInputBandName(inputBandName);
+  const handleSetInputBandName = (inputBand: {
+    name: string;
+    listeners: string;
+  }) => {
+    setInputBand(inputBand);
   };
 
   const handleInvalidGuess = () => {
@@ -235,9 +248,11 @@ const ChatInput = (props: ChatInputProps) => {
         // style={{ ...styles.textInput, ...styleWordThe(inputBandName) }}
         style={{ ...styles.textInput }}
         placeholder="Enter band name"
-        onChangeText={(text) => handleSetInputBandName(text)}
+        onChangeText={(text) =>
+          handleSetInputBandName({ name: text, listeners: "0" })
+        }
       >
-        {currentGuess}
+        {currentGuess.name}
         {/* {theWord ? (
           <>
             {isCorrectLetter ? (
@@ -260,7 +275,7 @@ const ChatInput = (props: ChatInputProps) => {
         style={styles.submitButton}
         onPress={() => {
           // TODO: Make sure the guesser is correct here. If the local player is the awayPlayer this will be wrong.
-          handleNewGuess(inputBandName, "homePlayer");
+          handleNewGuess(inputBand, "homePlayer");
         }}
       >
         <Text style={styles.text}>Submit</Text>

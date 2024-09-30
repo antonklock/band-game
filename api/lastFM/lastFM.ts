@@ -1,7 +1,7 @@
 interface LastFMResponse {
     results: {
         artistmatches: {
-            artist: Array<{ name: string }>
+            artist: Array<{ name: string, listeners: string }>
         }
     }
 }
@@ -11,14 +11,23 @@ interface LastFMResponse {
  * @param bandName - The name of the band to be searched on lastFM
  * @returns A list of artist names that match the search query - Trimmed and in lowercase
  */
-const searchLastFM = async (bandName: string): Promise<string[]> => {
+const searchLastFM = async (bandName: string): Promise<{ name: string, listeners: string }[]> => {
     const endpoint = `https://ws.audioscrobbler.com/2.0/?method=artist.search&artist=${bandName}&api_key=${process.env.EXPO_PUBLIC_LASTFM_API_KEY}&format=json`;
 
     try {
         const response = await fetch(endpoint);
         console.log("Success!");
         const data = await response.json() as LastFMResponse;
-        const artistList = data.results.artistmatches.artist.map((artist) => artist.name.trim().toLowerCase());
+        const listenders = data.results.artistmatches.artist[0].listeners.trim().toLowerCase();
+        const artistList = data.results.artistmatches.artist.map((artist) => {
+            const artistObj = {
+                name: artist.name.trim().toLowerCase(),
+                listeners: artist.listeners.trim().toLowerCase()
+            }
+
+            return artistObj;
+        });
+        console.log(`${bandName} has ${listenders} listeners`);
 
         return artistList;
 

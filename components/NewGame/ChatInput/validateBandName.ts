@@ -11,7 +11,7 @@ const colors = {
     pink: "\x1b[35m",
 };
 
-export const isValidBandName = async (bandName: string, gameId: string) => {
+export const isValidBand = async (band: { name: string, listeners: string }, gameId: string) => {
     try {
         const gameData = useGameStore.getState();
         if (gameData.games.length < 1) throw new Error("Games array is empty!");
@@ -20,7 +20,16 @@ export const isValidBandName = async (bandName: string, gameId: string) => {
         if (!currentGame) throw new Error("Couldn't find game with id: " + gameId);
 
         const currentBandName = currentGame.currentBandName.trim().toLowerCase();
-        const inputBandName = bandName.trim().toLowerCase();
+        const inputBandName = band.name.trim().toLowerCase();
+
+        const inputListeners = parseInt(band.listeners);
+
+        if (inputListeners < 5000) {
+            console.log(`${inputBandName} has less than 5000 listeners, skipping validation`);
+            return false;
+        } else {
+            console.log(`${inputBandName} has more than 5000 listeners, validating...`);
+        }
 
         if (inputBandName.length === 0) return false;
 
@@ -60,7 +69,7 @@ export const isValidBandName = async (bandName: string, gameId: string) => {
 };
 
 const checkIfBandNameExistsInList = (
-    matchingArtists: string[],
+    matchingArtists: { name: string, listeners: string }[],
     bandName: string
 ) => {
     if (matchingArtists.length === 0) {
@@ -69,7 +78,7 @@ const checkIfBandNameExistsInList = (
     }
 
     const normalizedMatchingArtists = matchingArtists.map((artist) =>
-        artist.toLowerCase().startsWith("the ") ? artist.slice(4) : artist
+        artist.name.toLowerCase().startsWith("the ") ? artist.name.slice(4) : artist
     );
     const normalizedBandName = bandName.toLowerCase().startsWith("the ")
         ? bandName.slice(4)
@@ -82,7 +91,7 @@ const checkIfBandNameExistsInList = (
 
     if (normalizedMatchingArtists.includes(normalizedBandName)) {
         console.log(`Found a match for ${bandName} in response from lastFM: `);
-        logMatchingArtists(matchingArtists, normalizedBandName);
+        logMatchingArtists(matchingArtists.map((artist) => artist.name), normalizedBandName);
         return true;
     }
 
@@ -101,3 +110,12 @@ const removeWord = (wordToRemove: string, bandName: string) => {
     }
     return bandName;
 };
+
+const checkListenersAmount = (listeners: string) => {
+    const listenersInt = parseInt(listeners);
+    const listenersThreshold = 50000;
+    if (listenersInt > listenersThreshold) {
+        return true;
+    }
+    return false;
+}

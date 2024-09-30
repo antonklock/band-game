@@ -1,8 +1,6 @@
 import { searchLastFM } from "../../../api/lastFM/lastFM";
 import { logMatchingArtists } from "./logMatchingArtists";
 import { useGameStore } from "../../../stores/gameStore";
-import { useGame } from "../../../hooks/useGame";
-import { GameData } from "../../../types";
 
 const colors = {
     reset: "\x1b[0m",
@@ -22,15 +20,6 @@ export const isValidBand = async (band: { name: string, listeners: string }, gam
         const currentBandName = currentGame.currentBandName.trim().toLowerCase();
         const inputBandName = band.name.trim().toLowerCase();
 
-        const inputListeners = parseInt(band.listeners);
-
-        if (inputListeners < 5000) {
-            console.log(`${inputBandName} has less than 5000 listeners, skipping validation`);
-            return false;
-        } else {
-            console.log(`${inputBandName} has more than 5000 listeners, validating...`);
-        }
-
         if (inputBandName.length === 0) return false;
 
         // Check if the guess has already been guessed
@@ -42,7 +31,7 @@ export const isValidBand = async (band: { name: string, listeners: string }, gam
 
         const processedBandName =
             inputStartsWithThe && !currentEndsWithT
-                ? removeWord("the", inputBandName).trim()
+                ? removeLeadingWord("the", inputBandName).trim()
                 : inputBandName;
 
         console.log(
@@ -55,7 +44,13 @@ export const isValidBand = async (band: { name: string, listeners: string }, gam
 
         if (currentBandName.slice(-1) === processedBandName[0] || !currentBandName) {
             const matchingArtists = await searchLastFM(processedBandName);
-            return checkIfBandNameExistsInList(matchingArtists, processedBandName);
+            const artistExists = checkIfBandNameExistsInList(matchingArtists, processedBandName);
+            const artistHasEnoughListeners = checkListenersAmount(matchingArtists, inputBandName);
+
+            console.log("artistExists: " + artistExists);
+            console.log(`artistHasEnoughListeners: ${artistHasEnoughListeners}`);
+
+            return artistExists && artistHasEnoughListeners;
         } else {
             console.log("currentBandName.slice(-1): " + currentBandName.slice(-1));
             console.log("processedBandName[0]: " + processedBandName[0]);
@@ -78,7 +73,7 @@ const checkIfBandNameExistsInList = (
     }
 
     const normalizedMatchingArtists = matchingArtists.map((artist) =>
-        artist.name.toLowerCase().startsWith("the ") ? artist.name.slice(4) : artist
+        artist.name.toLowerCase().startsWith("the ") ? artist.name.slice(4) : artist.name
     );
     const normalizedBandName = bandName.toLowerCase().startsWith("the ")
         ? bandName.slice(4)
@@ -102,20 +97,31 @@ const checkIfBandNameExistsInList = (
     return false;
 };
 
-const removeWord = (wordToRemove: string, bandName: string) => {
-    if (
-        bandName.substring(0, wordToRemove.length).toLowerCase() === wordToRemove
-    ) {
-        bandName = bandName.substring(3, bandName.length);
+const removeLeadingWord = (wordToRemove: string, bandName: string): string => {
+    const lowerCaseWord = wordToRemove.toLowerCase();
+    const lowerCaseBandName = bandName.toLowerCase();
+
+    if (lowerCaseBandName.startsWith(lowerCaseWord)) {
+        return bandName.slice(wordToRemove.length).trim();
     }
+
     return bandName;
 };
 
-const checkListenersAmount = (listeners: string) => {
-    const listenersInt = parseInt(listeners);
-    const listenersThreshold = 50000;
-    if (listenersInt > listenersThreshold) {
-        return true;
-    }
-    return false;
+const checkListenersAmount = (matchingArtists: { name: string, listeners: string }[], bandName: string) => {
+    const inputBandNameWithoutThe = removeLeadingWord("the", bandName).trim();
+    const listenersThreshold = 5000;
+    let hasEnoughListeners = false;
+
+    const checkArtistListeners = (artistName: string, listeners: string) => {
+        console.log(`${artistName} has ${listeners} listeners`);
+        return parseInt(listeners) > listenersThreshold;
+    };
+
+    hasEnoughListeners = matchingArtists.some(artist =>
+        (artist.name === bandName && checkArtistListeners(bandName, artist.listeners)) ||
+        (artist.name === inputBandNameWithoutThe && checkArtistListeners(inputBandNameWithoutThe, artist.listeners))
+    );
+
+    return hasEnoughListeners;
 }

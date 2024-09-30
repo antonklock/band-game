@@ -18,7 +18,7 @@ const searchLastFM = async (bandName: string): Promise<{ name: string, listeners
         const response = await fetch(endpoint);
         console.log("Success!");
         const data = await response.json() as LastFMResponse;
-        const listenders = data.results.artistmatches.artist[0].listeners.trim().toLowerCase();
+        // const listenders = data.results.artistmatches.artist[0].listeners.trim().toLowerCase();
         const artistList = data.results.artistmatches.artist.map((artist) => {
             const artistObj = {
                 name: artist.name.trim().toLowerCase(),
@@ -27,7 +27,7 @@ const searchLastFM = async (bandName: string): Promise<{ name: string, listeners
 
             return artistObj;
         });
-        console.log(`${bandName} has ${listenders} listeners`);
+        // console.log(`${bandName} has ${listenders} listeners`);
 
         return artistList;
 

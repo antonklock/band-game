@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -5,39 +6,74 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
-import { useEffect, useState } from "react";
 import { auth } from "../../firebaseConfig";
 import { User } from "firebase/auth";
 import { getRandomBandName } from "../../utils/GameAI/exampleBandNames";
-import { useGameList } from "../../hooks/useGameList";
 import { useGameStore } from "../../stores/gameStore";
 
 export default function OngoingGames({ navigation }: { navigation: any }) {
-  const games = useGameList();
-  const { updateGame, removeGame } = useGameStore();
+  const {
+    updateGame,
+    loadGame,
+    removeGame,
+    getUserGames,
+    userGames,
+    isLoading,
+    error,
+  } = useGameStore();
 
-  // TODO: Change to use a store instead of useState
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
+      if (user) {
+        getUserGames(user.uid)
+          .then(() => {
+            console.log(
+              "User games fetched:",
+              userGames,
+              "For user:",
+              user.uid
+            );
+          })
+          .catch((error) => {
+            console.error("Failed to fetch user games:", error);
+          });
+      }
     });
 
     return unsubscribe;
-  }, []);
+  }, [getUserGames]);
 
-  const handleRemoveGame = (gameId: string) => {
-    removeGame(gameId);
+  const handleRemoveGame = async (gameId: string) => {
+    try {
+      await removeGame(gameId);
+    } catch (error) {
+      console.error("Failed to remove game:", error);
+    }
   };
 
-  const handleUpdateGame = (gameId: string) => {
-    updateGame(gameId, (game) => ({
-      ...game,
-      currentBandName: getRandomBandName(),
-    }));
+  const handleUpdateGame = async (gameId: string) => {
+    try {
+      await loadGame(gameId);
+      await updateGame((currentGame) => ({
+        ...currentGame,
+        currentBandName: getRandomBandName(),
+      }));
+      if (user) {
+        getUserGames(user.uid); // Refresh the game list after update
+      }
+    } catch (error) {
+      console.error("Failed to update game:", error);
+    }
   };
+
+  if (error) {
+    return <Text>Error: {error}</Text>;
+  }
 
   return (
     <View style={styles.container}>
@@ -55,37 +91,43 @@ export default function OngoingGames({ navigation }: { navigation: any }) {
       {user && (
         <>
           <View style={styles.gamesContainer}>
-            <FlatList
-              data={games}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <View style={styles.gameItem}>
-                  <Text>Game ID: {item.id}</Text>
-                  <Text>Home Player: {item.players.homePlayer.name}</Text>
-                  <Text>Away Player: {item.players.awayPlayer.name}</Text>
-                  <Text>Current Turn: {item.currentTurn}</Text>
-                  <Text>Current Band Name: {item.currentBandName}</Text>
-                  <TouchableOpacity
-                    onPress={() => handleRemoveGame(item.id)}
-                    style={{
-                      ...styles.addNewGameButton,
-                      backgroundColor: "red",
-                    }}
-                  >
-                    <Text style={{ color: "white" }}>Delete</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={{
-                      ...styles.addNewGameButton,
-                      backgroundColor: "yellow",
-                    }}
-                    onPress={() => handleUpdateGame(item.id)}
-                  >
-                    <Text style={{ color: "black" }}>Update Game</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            />
+            {isLoading ? (
+              <View style={styles.centeredContainer}>
+                <ActivityIndicator size="small" color="#ffffff" />
+              </View>
+            ) : (
+              <FlatList
+                data={userGames}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <View style={styles.gameItem}>
+                    <Text>Game ID: {item.id}</Text>
+                    <Text>Home Player: {item.players.homePlayer.name}</Text>
+                    <Text>Away Player: {item.players.awayPlayer.name}</Text>
+                    <Text>Current Turn: {item.currentTurn}</Text>
+                    <Text>Current Band Name: {item.currentBandName}</Text>
+                    <TouchableOpacity
+                      onPress={() => handleRemoveGame(item.id)}
+                      style={{
+                        ...styles.addNewGameButton,
+                        backgroundColor: "red",
+                      }}
+                    >
+                      <Text style={{ color: "white" }}>Delete</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{
+                        ...styles.addNewGameButton,
+                        backgroundColor: "yellow",
+                      }}
+                      onPress={() => handleUpdateGame(item.id)}
+                    >
+                      <Text style={{ color: "black" }}>Update Game</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
+            )}
           </View>
         </>
       )}
@@ -142,5 +184,10 @@ const styles = StyleSheet.create({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+  },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

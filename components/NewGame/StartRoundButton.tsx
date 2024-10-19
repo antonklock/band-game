@@ -1,17 +1,14 @@
 import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { useGameStore } from "../../stores/gameStore";
-import { useGame } from "../../hooks/useGame";
 
 type StartRoundButtonProps = {
-  gameId: string;
   navigation: any;
 };
 
 export default function StartRoundButton(props: StartRoundButtonProps) {
-  const { navigation, gameId } = props;
-  const { updateGame } = useGameStore();
-
-  const game = useGame(gameId).game;
+  const { navigation } = props;
+  const game = useGameStore((state) => state.game);
+  const updateGame = useGameStore((state) => state.updateGame);
 
   const isWaitingOnOpponent = () => {
     if (!game) {
@@ -25,7 +22,7 @@ export default function StartRoundButton(props: StartRoundButtonProps) {
   };
 
   const handleSetRoundStarted = (newRoundStarted: boolean) => {
-    updateGame(gameId, (game) => {
+    updateGame((game) => {
       game.gameStarted = newRoundStarted;
       return game;
     });

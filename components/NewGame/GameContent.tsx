@@ -1,19 +1,18 @@
 import React, { useEffect, useRef } from "react";
-import { View, StyleSheet, ScrollView, Keyboard } from "react-native";
+import { View, StyleSheet, ScrollView, Keyboard, Text } from "react-native";
 import ChatArea from "./Chat/ChatArea";
 import { useGameStore } from "../../stores/gameStore";
 
-type GameContentProps = {
-  gameId: string;
-};
+const GameContent = () => {
+  const game = useGameStore((state) => state.game);
 
-const GameContent = (props: GameContentProps) => {
-  const { gameId } = props;
-  const gameData = useGameStore.getState();
-  if (gameData.games.length < 1) throw new Error("Games array is empty!");
-
-  const currentGame = gameData.games.find((game) => game.id === gameId);
-  if (!currentGame) throw new Error("Couldn't find game with id: " + gameId);
+  if (!game) {
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.text}>No game data available</Text>
+      </View>
+    );
+  }
 
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -22,7 +21,7 @@ const GameContent = (props: GameContentProps) => {
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollToEnd({ animated: true });
     }
-  }, [currentGame.previousGuesses]);
+  }, [game.previousGuesses]);
 
   // Add listeners for keyboard show and hide
   useEffect(() => {
@@ -48,7 +47,7 @@ const GameContent = (props: GameContentProps) => {
 
   return (
     <View style={styles.gameContent}>
-      <ChatArea gameId={gameId} />
+      <ChatArea />
     </View>
   );
 };
@@ -68,5 +67,10 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "white",
+  },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

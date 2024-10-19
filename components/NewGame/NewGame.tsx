@@ -1,99 +1,99 @@
 import React, { useEffect } from "react";
 import {
-  StyleSheet,
+  View,
+  Text,
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Text,
-  View,
+  StyleSheet,
 } from "react-native";
-import { useState } from "react";
-import StartRoundButton from "./StartRoundButton";
-import ChatInput from "./ChatInput/ChatInput";
-import GameContent from "./GameContent";
-import GameHeader from "./GameHeader/GameHeader";
-import { getAiResponse } from "../../utils/GameAI/GameAiPlayer";
-import { searchLastFM } from "../../api/lastFM/lastFM";
-import uuid from "react-native-uuid";
-import { handleAddNewBand } from "./handleAddBand";
-// import { setCurrentBandName } from "../../stores/gameStoreFunctions";
-import { useGame } from "../../hooks/useGame";
 import { useGameStore } from "../../stores/gameStore";
+import { GameData } from "../../types";
+import GameHeader from "./GameHeader/GameHeader";
+import GameContent from "./GameContent";
+import ChatInput from "./ChatInput/ChatInput";
+import StartRoundButton from "./StartRoundButton";
 
-export default function NewGame({ navigation }: { navigation: any }) {
-  // DEBUG: Adding first message - A random band name
-  // useEffect(() => {
-  //   async function getNewBand() {
-  //     try {
-  //       const randomLetter = String.fromCharCode(
-  //         65 + Math.floor(Math.random() * 26)
-  //       );
-  //       const newBands = await searchLastFM(randomLetter);
-  //       const newBand = newBands[Math.floor(Math.random() * newBands.length)]
-  //         .split(" ")
-  //         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-  //         .join(" ");
+export default function NewGame({ navigation }: Readonly<{ navigation: any }>) {
+  const { createGame, game: game, isLoading, error } = useGameStore();
 
-  //       const guessId = uuid.v4() as string;
-  //       handleAddNewBand(newBand, "awayPlayer", guessId);
-  //       setCurrentBandName(guessId);
-  //     } catch (error) {
-  //       console.error("Failed to fetch new band", error);
-  //     }
-  //   }
+  const handleCreateGame = async () => {
+    try {
+      const newGameData: Omit<GameData, "id"> = {
+        players: {
+          homePlayer: {
+            id: "homeID",
+            name: "Home Player",
+            score: 0,
+            strikes: 0,
+          },
+          awayPlayer: {
+            id: "awayID",
+            name: "Away Player",
+            score: 0,
+            strikes: 0,
+          },
+        },
+        previousGuesses: [],
+        currentBandName: "",
+        inputBandName: "",
+        gameStarted: false,
+        currentTurn: "homePlayer",
+      };
+      await createGame(newGameData);
+    } catch (error) {
+      console.error("Failed to create new game:", error);
+    }
+  };
 
-  //   // getNewBand();
+  useEffect(() => {
+    handleCreateGame();
+  }, []);
 
-  //   return () => {
-  //     // Resetting the game store when leaving the match
-  //     // useGameStore.setState({
-  //     //   bands: [],
-  //     //   currentBandName: "",
-  //     //   gameStarted: false,
-  //     // });
-  //   };
-  // }, []);
+  useEffect(() => {
+    if (game) {
+      console.log("Game updated:", game);
+    }
+  }, [game]);
 
-  const [gameId, setGameId] = useState(() => uuid.v4() as string);
-  const { updateGame } = useGameStore();
-  const { game, loading, error } = useGame(gameId);
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <View style={styles.centeredContainer}>
-        <Text style={styles.whiteText}>Loading game...</Text>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#ffffff" />
+        <Text style={styles.whiteText}>Creating new game...</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.centeredContainer}>
-        <Text style={styles.whiteText}>Error: {error}</Text>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Error: {error}</Text>
       </View>
     );
   }
 
-  if (!game) {
-    return (
-      <View style={styles.centeredContainer}>
-        <Text style={styles.whiteText}>No game found...</Text>
-      </View>
-    );
-  } else {
+  if (game) {
     return (
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
-        <GameHeader navigation={navigation} gameId={game.id} />
+        <GameHeader navigation={navigation} />
 
-        <GameContent gameId={gameId} />
+        <GameContent />
         {game?.gameStarted ? (
-          <ChatInput gameId={gameId} />
+          <ChatInput />
         ) : (
-          <StartRoundButton gameId={gameId} navigation={navigation} />
+          <StartRoundButton navigation={navigation} />
         )}
       </KeyboardAvoidingView>
+    );
+  } else {
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.whiteText}>Couldn't find game...</Text>
+      </View>
     );
   }
 }

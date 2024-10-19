@@ -1,38 +1,32 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Strikes from "./PointMarker";
-import { useGame } from "../../../hooks/useGame";
-import { PlayerStrike } from "../../../types";
+import { GameData } from "../../../types";
 
 type VersusBarProps = {
-  gameId: string;
+  game: GameData;
 };
 
 const VersusBar = (props: VersusBarProps) => {
-  const { gameId } = props;
-  const { game, loading } = useGame(gameId);
+  const { game } = props;
   const players = game?.players;
 
   return (
     <View style={styles.versusBar}>
       <View style={styles.versusView}>
         <Text style={styles.text}>
-          {loading ? "Loading..." : players?.homePlayer.name}
+          {game ? players?.homePlayer.name : "Loading..."}
         </Text>
-        <Strikes
-          strikes={loading ? 0 : (players?.homePlayer.strikes as PlayerStrike)}
-        />
+        <Strikes strikes={game ? players?.homePlayer.strikes : 0} />
       </View>
       <View style={styles.versusView}>
         <Text style={styles.text}>VS.</Text>
       </View>
       <View style={styles.versusView}>
         <Text style={styles.text}>
-          {loading ? "Loading..." : players?.awayPlayer.name}
+          {game ? players?.awayPlayer.name : "Loading..."}
         </Text>
-        <Strikes
-          strikes={loading ? 0 : (players?.homePlayer.strikes as PlayerStrike)}
-        />
+        <Strikes strikes={game ? players?.awayPlayer.strikes : 0} />
       </View>
     </View>
   );

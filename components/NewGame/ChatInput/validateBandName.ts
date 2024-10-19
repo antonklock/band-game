@@ -1,6 +1,7 @@
 import { searchLastFM } from "../../../api/lastFM/lastFM";
 import { logMatchingArtists } from "./logMatchingArtists";
-import { useGameStore } from "../../../stores/gameStore";
+import { gameStore } from "../../../stores/gameStore";
+import { GameData } from "../../../types";
 
 const colors = {
     reset: "\x1b[0m",
@@ -9,21 +10,20 @@ const colors = {
     pink: "\x1b[35m",
 };
 
-export const isValidBand = async (band: { name: string, listeners: string }, gameId: string) => {
+export const isValidBand = async (band: { name: string, listeners: string }) => {
+    let game = gameStore.getState().game;
+    if (!game) throw new Error("No game data available!");
+
     try {
-        const gameData = useGameStore.getState();
-        if (gameData.games.length < 1) throw new Error("Games array is empty!");
+        if (!game) throw new Error("No game data available!");
 
-        const currentGame = gameData.games.find((game) => game.id === gameId);
-        if (!currentGame) throw new Error("Couldn't find game with id: " + gameId);
-
-        const currentBandName = currentGame.currentBandName.trim().toLowerCase();
+        const currentBandName = game.currentBandName.trim().toLowerCase();
         const inputBandName = band.name.trim().toLowerCase();
 
         if (inputBandName.length === 0) return false;
 
-        // Check if the guess has already been guessed
-        const previousGuessesNames = currentGame.previousGuesses.map((guess) => guess.name);
+        // Check if the guess has already been guessed - Extend to check for the same band name with different case, spelling and leading "the"
+        const previousGuessesNames = game.previousGuesses.map((guess) => guess.name);
         if (previousGuessesNames.includes(inputBandName)) return false;
 
         const inputStartsWithThe = inputBandName.startsWith("the");
@@ -79,7 +79,7 @@ const checkIfBandNameExistsInList = (
         ? bandName.slice(4)
         : bandName;
 
-    if (normalizedBandName[0] === normalizedBandName) {
+    if (normalizedBandName.startsWith(normalizedMatchingArtists[0])) {
         console.log(`${bandName} is the first result on LastFM`);
         return true;
     }

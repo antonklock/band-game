@@ -1,17 +1,25 @@
-import { ScrollView, View, Text, StyleSheet } from "react-native";
+import React, { useRef, useEffect } from "react";
+import {
+  ScrollView,
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 import Message from "./Message";
-import { useRef, useEffect } from "react";
 import { useGameStore } from "../../../stores/gameStore";
-import { useGame } from "../../../hooks/useGame";
 
-type ChatAreaProps = {
-  gameId: string;
-};
+// type ChatAreaProps = {
+//   gameId: string;
+// };
 
-const ChatArea = (props: ChatAreaProps) => {
-  const { gameId } = props;
-  const gameData = useGame(gameId);
-  const game = gameData.game;
+const ChatArea = () => {
+  const { game, isLoading, error, loadGame } = useGameStore((state) => ({
+    game: state.game,
+    isLoading: state.isLoading,
+    error: state.error,
+    loadGame: state.loadGame,
+  }));
 
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -19,29 +27,44 @@ const ChatArea = (props: ChatAreaProps) => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [game?.previousGuesses]);
 
+  if (isLoading) {
+    return <ActivityIndicator size="large" />;
+  }
+
+  if (error) {
+    return <Text>Error: {error}</Text>;
+  }
+
+  if (!game) {
+    return <Text>No game data available</Text>;
+  }
+
   return (
     <ScrollView ref={scrollViewRef} contentContainerStyle={styles.chatArea}>
-      {game?.previousGuesses.map((band, index) => {
-        return (
-          <View key={"chatMessage_" + index} style={{ width: "100%" }}>
-            {index === game?.previousGuesses.length - 1 &&
-              band.guesser === "awayPlayer" && (
-                <Text key={index + "_text"} style={styles.latestGuessText}>
-                  Start round to see last message
-                </Text>
-              )}
-            <Message
-              hidden={
-                !game.gameStarted && index === game.previousGuesses.length - 1
-              }
-              key={index}
-              message={band.name}
-              guesser={band.guesser}
-              status={band.status}
-            />
-          </View>
-        );
-      })}
+      {game.previousGuesses.map((band, index) => (
+        <View
+          key={`chatMessage_${band.name}_${index}`}
+          style={{ width: "100%" }}
+        >
+          {index === game.previousGuesses.length - 1 &&
+            band.guesser === "awayPlayer" && (
+              <Text
+                key={`${band.name}_text_${index}`}
+                style={styles.latestGuessText}
+              >
+                Start round to see last message
+              </Text>
+            )}
+          <Message
+            hidden={
+              !game.gameStarted && index === game.previousGuesses.length - 1
+            }
+            message={band.name}
+            guesser={band.guesser}
+            status={band.status}
+          />
+        </View>
+      ))}
     </ScrollView>
   );
 };

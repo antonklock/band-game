@@ -64,62 +64,76 @@ const ChatInput: React.FC = () => {
     setInputBand({ name: "", listeners: "0" });
 
     setTimeout(async () => {
-      await updateGame((currentGame: GameData) => {
-        const updatedGuesses = currentGame.previousGuesses.map((guess) =>
-          guess.id === newGuessId
-            ? {
-                ...guess,
-                status: (guessIsValid ? "valid" : "invalid") as BandStatus,
-                guesser: guessIsValid
-                  ? guesser === "homePlayer"
-                    ? "awayPlayer"
-                    : "homePlayer"
-                  : guesser,
-              }
-            : guess
-        );
-
-        return {
-          ...currentGame,
-          previousGuesses: updatedGuesses,
-          currentTurn: guessIsValid
-            ? guesser === "homePlayer"
-              ? "awayPlayer"
-              : "homePlayer"
-            : guesser,
-          currentBandName: guessIsValid
-            ? guessBandName
-            : currentGame.currentBandName,
-        };
-      });
-
-      if (!guessIsValid) {
-        handleInvalidGuess();
+      if (guessIsValid) {
+        // TODO: Clean this up
+        handleValidGuess(guesser, guessBandName, newGuessId);
+        aiGuess(guesser, guessBandName);
       } else {
-        inputRef.current?.clear();
-        inputRef.current?.blur();
-
-        // AI ANSWER
-        if (guesser === "homePlayer" && game) {
-          const randomTime = Math.random() * 3000 + 1000;
-          console.log(`randomTime: ${randomTime}`);
-
-          setTimeout(() => {
-            const guesses = game.previousGuesses.map((guess) => guess.name);
-            const aiGuess = getAiResponse(guessBandName, guesses);
-            if (aiGuess)
-              handleNewGuess(
-                { name: aiGuess, listeners: "1000000" },
-                "awayPlayer"
-              );
-          }, randomTime);
-        }
+        handleInvalidGuess(newGuessId);
       }
     }, Math.random() * 3000 + 1000);
   };
 
-  const handleInvalidGuess = () => {
+  const aiGuess = (guesser: Guesser, guessBandName: string) => {
+    if (guesser === "homePlayer" && game) {
+      const randomTime = Math.random() * 3000 + 1000;
+      console.log(`randomTime: ${randomTime}`);
+
+      setTimeout(() => {
+        const guesses = game.previousGuesses.map((guess) => guess.name);
+        const aiGuess = getAiResponse(guessBandName, guesses);
+        if (aiGuess)
+          handleNewGuess({ name: aiGuess, listeners: "1000000" }, "awayPlayer");
+      }, randomTime);
+    }
+  };
+
+  const handleValidGuess = async (
+    guesser: Guesser,
+    guessBandName: string,
+    newGuessId: string
+  ) => {
+    inputRef.current?.clear();
+    inputRef.current?.blur();
+
+    await updateGame((currentGame: GameData) => {
+      const updatedGuesses = currentGame.previousGuesses.map((guess) =>
+        guess.id === newGuessId
+          ? {
+              ...guess,
+              status: "valid" as BandStatus,
+            }
+          : guess
+      );
+
+      return {
+        ...currentGame,
+        previousGuesses: updatedGuesses,
+        currentTurn: guesser === "homePlayer" ? "awayPlayer" : "homePlayer",
+        currentBandName: guessBandName,
+      };
+    });
+  };
+
+  const handleInvalidGuess = async (newGuessId: string) => {
     console.log("Invalid guess");
+
+    await updateGame((currentGame: GameData) => {
+      const updatedGuesses = currentGame.previousGuesses.map((guess) =>
+        guess.id === newGuessId
+          ? {
+              ...guess,
+              status: "invalid" as BandStatus,
+            }
+          : guess
+      );
+
+      return {
+        ...currentGame,
+        previousGuesses: updatedGuesses,
+      };
+    });
+
     inputRef.current?.focus();
     inputRef.current?.setNativeProps({
       style: {

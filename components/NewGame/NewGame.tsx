@@ -15,7 +15,7 @@ import ChatInput from "./ChatInput/ChatInput";
 import StartRoundButton from "./StartRoundButton";
 
 export default function NewGame({ navigation }: Readonly<{ navigation: any }>) {
-  const { createGame, game: game, isLoading, error } = useGameStore();
+  const { createGame, game, isLoading, error } = useGameStore();
 
   const handleCreateGame = async () => {
     try {

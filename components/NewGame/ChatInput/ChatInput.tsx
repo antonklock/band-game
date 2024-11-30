@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   TextInput,
   View,
@@ -18,7 +18,7 @@ import {
 } from "../../../types";
 
 const ChatInput: React.FC = () => {
-  const { game, updateGame, loadGame } = useGameStore();
+  const { game, updateGame } = useGameStore();
   const [inputBand, setInputBand] = useState({ name: "", listeners: "0" });
   const inputRef = useRef<TextInput>(null);
 

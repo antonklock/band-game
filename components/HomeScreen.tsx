@@ -15,7 +15,6 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      // console.log("User:", user);
       setUser(user);
     });
 

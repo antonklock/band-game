@@ -10,8 +10,8 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
 
   const handleLogin = async () => {
     try {
-      const user = await loginUser(email, password);
-      console.log("User logged in:", user);
+      await loginUser(email, password);
+
       navigation.navigate("Home");
     } catch (error) {
       //@ts-ignore

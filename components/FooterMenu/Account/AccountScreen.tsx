@@ -10,7 +10,6 @@ export default function AccountScreen({ navigation }: { navigation: any }) {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      console.log("User:", user);
       setUser(user);
     });
 

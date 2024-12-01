@@ -1,13 +1,13 @@
-import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { Button, StyleSheet, Text, View, TextInput } from 'react-native';
-import { create } from 'zustand';
+import { StatusBar } from "expo-status-bar";
+import { useState } from "react";
+import { Button, StyleSheet, Text, View, TextInput } from "react-native";
+import { create } from "zustand";
 
 type Message = {
   text: string;
   time: number;
   user: string;
-}
+};
 
 interface ChatState {
   messages: Message[];
@@ -16,26 +16,37 @@ interface ChatState {
 
 const useChatStore = create<ChatState>((set) => ({
   messages: [],
-  addMessage: (message) => set((state) => ({ messages: [...state.messages, message] }))
+  addMessage: (message) =>
+    set((state) => ({ messages: [...state.messages, message] })),
 }));
 
-export default function ChatScreen({navigation}: {navigation: any}) {
-  const [textMessage, setTextMessage] = useState<string>('');
+export default function ChatScreen({ navigation }: { navigation: any }) {
+  const [textMessage, setTextMessage] = useState<string>("");
   const messages = useChatStore((state) => state.messages);
 
   return (
     <View style={styles.container}>
-      <Button title="Home" onPress={() => {
-                navigation.navigate('Home');
-            }}/>
-            <Button title="Profile" onPress={() => {
-                navigation.navigate('Profile');
-            }}/>
+      <Button
+        title="Home"
+        onPress={() => {
+          navigation.navigate("Home");
+        }}
+      />
+      <Button
+        title="Profile"
+        onPress={() => {
+          navigation.navigate("Profile");
+        }}
+      />
       <View>
         {/* <BackgroundMusic /> */}
         <Text>Open up App.tsx to start working on your app!</Text>
 
-        <TextInput style={styles.input} onChangeText={setTextMessage} value={textMessage}/>
+        <TextInput
+          style={styles.input}
+          onChangeText={setTextMessage}
+          value={textMessage}
+        />
 
         <Button
           title="Add Message"
@@ -43,7 +54,7 @@ export default function ChatScreen({navigation}: {navigation: any}) {
             useChatStore.getState().addMessage({
               text: textMessage,
               time: Date.now(),
-              user: 'me'
+              user: "me",
             });
           }}
         />
@@ -53,15 +64,15 @@ export default function ChatScreen({navigation}: {navigation: any}) {
         title="Search band"
         onPress={() => {
           searchBandName(textMessage);
-        }}/>
-      
+        }}
+      />
+
       <View style={styles.messages}>
-          {messages.map((message, index) => (
-            <Text key={index}>{message.text}</Text>
-          ))}
+        {messages.map((message, index) => (
+          <Text key={index}>{message.text}</Text>
+        ))}
         <StatusBar style="auto" />
       </View>
-      
     </View>
   );
 }
@@ -71,19 +82,19 @@ const styles = StyleSheet.create({
     marginTop: 150,
     display: "flex",
     flexDirection: "column",
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   messages: {
     display: "flex",
     flexDirection: "column",
-    alignItems: 'center',
+    alignItems: "center",
     height: 300,
     width: "80%",
-    backgroundColor: 'blue',
-    overflow: 'scroll',
+    backgroundColor: "blue",
+    overflow: "scroll",
   },
 
   input: {
@@ -102,13 +113,13 @@ const searchBandName = async (searchTerm: string) => {
 
   // Make a post request to api url
   const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
-  
+
   // Parse the response
   const data = await response.json();
   console.log(data);
-}
+};

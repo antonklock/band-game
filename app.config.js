@@ -6,6 +6,7 @@ module.exports = ({ config }) => ({
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
+    newArchEnabled: true,
     splash: {
       image: "./assets/splash.png",
       resizeMode: "contain",

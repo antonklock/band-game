@@ -1,11 +1,11 @@
 import React from "react";
-import { View } from "react-native";
+import { View, StyleSheet } from "react-native";
 import BandGameBoard from "../GameBoard/BandGameBoard";
 import { Client } from "boardgame.io/react-native";
 import { BandGame } from "../../game/game";
 import { Local } from "boardgame.io/multiplayer";
 import BandGameClient from "./BandGameClient";
-
+import { Text } from "react-native";
 // export const getPlayerName = (id: string) => {
 //   return id === "0" ? "homePlayer" : "awayPlayer";
 // };
@@ -30,3 +30,15 @@ export default function NewGame({ navigation }: Readonly<{ navigation: any }>) {
     // </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  text: {
+    color: "red",
+    fontSize: 20,
+  },
+});

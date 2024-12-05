@@ -1,4 +1,4 @@
-import { Ctx, FnContext, Game } from 'boardgame.io';
+import { FnContext, Game } from 'boardgame.io';
 import { gameStateSchema, GameTurnContext, MoveContext, moveContextSchema, turnContextSchema } from '../zod/schemas';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import validateMove from '../boardgameio/moveValidators';

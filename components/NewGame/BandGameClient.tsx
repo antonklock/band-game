@@ -1,36 +1,47 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Client } from "boardgame.io/react-native";
 import { SocketIO } from "boardgame.io/multiplayer";
 
+const DEV_SERVER_URL = "http://192.168.50.218:8000";
+
 type GameState = {
-  lastPing: number | null;
+  lastPing: string | null;
   pingCount: number;
   pongCount: number;
 };
 
-// Game board component that displays the game state and handles moves
+type GameMoves = {
+  ping: () => void;
+};
+
 const GameBoard = ({
   G,
   ctx,
   moves,
+  isConnected,
 }: {
   G: GameState;
-  ctx: any;
-  moves: any;
+  ctx: unknown;
+  moves: GameMoves;
+  isConnected: boolean;
 }) => {
-  console.log("Available moves:", moves); // Debug log
-  console.log("Game state:", G); // Debug log
-  console.log("Game context:", ctx); // Debug log
+  console.log("GameBoard render:", { G, ctx, isConnected }); // Debug log
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Band Game</Text>
 
+      {!isConnected && (
+        <Text style={styles.errorText}>Connecting to server...</Text>
+      )}
+
       <View style={styles.statsContainer}>
-        <Text style={styles.stat}>Ping Count: {G.pingCount}</Text>
-        <Text style={styles.stat}>Pong Count: {G.pongCount}</Text>
-        {G.lastPing && (
+        <Text style={styles.stat}>Connection: {isConnected ? "✅" : "❌"}</Text>
+        <Text style={styles.stat}>Server: {DEV_SERVER_URL}</Text>
+        <Text style={styles.stat}>Ping Count: {G?.pingCount || 0}</Text>
+        <Text style={styles.stat}>Pong Count: {G?.pongCount || 0}</Text>
+        {G?.lastPing && (
           <Text style={styles.stat}>
             Last Ping: {new Date(G.lastPing).toLocaleString()}
           </Text>
@@ -38,17 +49,19 @@ const GameBoard = ({
       </View>
 
       <TouchableOpacity
-        style={styles.pingButton}
+        style={[styles.pingButton, !isConnected && styles.disabledButton]}
         onPress={() => {
-          console.log("Button pressed"); // Debug log
-          moves.ping();
+          console.log("Ping button pressed"); // Debug log
+          if (moves?.ping) {
+            moves.ping();
+          } else {
+            console.log("moves.ping is not available"); // Debug log
+          }
         }}
+        disabled={!isConnected}
       >
         <Text style={styles.buttonText}>PING!</Text>
       </TouchableOpacity>
-
-      <Text style={styles.debugText}>Debug Info:</Text>
-      <Text>Moves available: {Object.keys(moves || {}).join(", ")}</Text>
     </View>
   );
 };
@@ -63,21 +76,35 @@ const BandGameClient = Client({
       pongCount: 0,
     }),
     moves: {
-      ping: ({ G }: { G: GameState }) => {
+      ping: ({ G, _ctx }: { G: GameState; _ctx: unknown }) => {
+        console.log("Move: ping"); // Debug log
         G.pingCount += 1;
         G.pongCount += 1;
-        G.lastPing = Date.now();
+        G.lastPing = new Date().toISOString();
       },
     },
   },
   board: GameBoard,
   multiplayer: SocketIO({
-    server: "http://localhost:8000",
+    server: DEV_SERVER_URL,
   }),
-  debug: true,
+  debug: __DEV__,
 });
 
+// Wrapper component to ensure proper mounting
+const GameWrapper = () => {
+  return (
+    <View style={styles.wrapper}>
+      <Text style={styles.debugText}>Game Component Loading</Text>
+      <BandGameClient playerID="0" />
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     alignItems: "center",
@@ -116,15 +143,23 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginBottom: 20,
   },
+  disabledButton: {
+    backgroundColor: "#cccccc",
+  },
   buttonText: {
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
   },
   debugText: {
-    marginTop: 20,
-    fontWeight: "bold",
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    color: "#666",
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 10,
   },
 });
 
-export default BandGameClient;
+export default GameWrapper;

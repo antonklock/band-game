@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Client } from "boardgame.io/react-native";
 import { SocketIO } from "boardgame.io/multiplayer";
@@ -26,8 +26,6 @@ const GameBoard = ({
   moves: GameMoves;
   isConnected: boolean;
 }) => {
-  console.log("GameBoard render:", { G, ctx, isConnected }); // Debug log
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Band Game</Text>
@@ -51,11 +49,11 @@ const GameBoard = ({
       <TouchableOpacity
         style={[styles.pingButton, !isConnected && styles.disabledButton]}
         onPress={() => {
-          console.log("Ping button pressed"); // Debug log
+          console.log("Ping button pressed");
           if (moves?.ping) {
             moves.ping();
           } else {
-            console.log("moves.ping is not available"); // Debug log
+            console.log("moves.ping is not available");
           }
         }}
         disabled={!isConnected}
@@ -77,7 +75,6 @@ const BandGameClient = Client({
     }),
     moves: {
       ping: ({ G, _ctx }: { G: GameState; _ctx: unknown }) => {
-        console.log("Move: ping"); // Debug log
         G.pingCount += 1;
         G.pongCount += 1;
         G.lastPing = new Date().toISOString();
@@ -92,11 +89,10 @@ const BandGameClient = Client({
 });
 
 // Wrapper component to ensure proper mounting
-const GameWrapper = () => {
+const GameWrapper = ({ playerID }: { playerID: string }) => {
   return (
     <View style={styles.wrapper}>
-      <Text style={styles.debugText}>Game Component Loading</Text>
-      <BandGameClient playerID="0" />
+      <BandGameClient playerID={playerID} />
     </View>
   );
 };

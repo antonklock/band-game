@@ -18,27 +18,5 @@ import { Text } from "react-native";
 // });
 
 export default function NewGame({ navigation }: Readonly<{ navigation: any }>) {
-  return (
-    <BandGameClient playerID="0" />
-    // <View style={{ flex: 1, flexDirection: "row" }}>
-    //   <View style={{ flex: 1 }}>
-    //     <BandGameClient playerID="0" />
-    //   </View>
-    //   <View style={{ flex: 1 }}>
-    //     <BandGameClient playerID="1" />
-    //   </View>
-    // </View>
-  );
+  return <BandGameClient playerID="0" />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  text: {
-    color: "red",
-    fontSize: 20,
-  },
-});

@@ -1,30 +1,34 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Client } from "boardgame.io/react-native";
+import { Ctx } from "boardgame.io";
 import { SocketIO } from "boardgame.io/multiplayer";
 
 const DEV_SERVER_URL = "http://192.168.50.218:8000";
 
 type GameState = {
-  lastPing: string | null;
-  pingCount: number;
-  pongCount: number;
+  scores: {
+    player0: number;
+    player1: number;
+  };
+  currentPlayer: "player0" | "player1";
 };
 
 type GameMoves = {
-  ping: () => void;
+  rollPoints: () => void;
+  skipTurn: () => void;
 };
 
 const GameBoard = ({
   G,
-  ctx,
   moves,
   isConnected,
+  playerID,
 }: {
   G: GameState;
-  ctx: unknown;
   moves: GameMoves;
   isConnected: boolean;
+  playerID: string;
 }) => {
   return (
     <View style={styles.container}>
@@ -37,29 +41,41 @@ const GameBoard = ({
       <View style={styles.statsContainer}>
         <Text style={styles.stat}>Connection: {isConnected ? "✅" : "❌"}</Text>
         <Text style={styles.stat}>Server: {DEV_SERVER_URL}</Text>
-        <Text style={styles.stat}>Ping Count: {G?.pingCount || 0}</Text>
-        <Text style={styles.stat}>Pong Count: {G?.pongCount || 0}</Text>
-        {G?.lastPing && (
+        <Text style={styles.stat}>Player: {playerID}</Text>
+        <View>
           <Text style={styles.stat}>
-            Last Ping: {new Date(G.lastPing).toLocaleString()}
+            Player0 score: {G?.scores.player0 || 0}
           </Text>
-        )}
+          <Text style={styles.stat}>
+            Player1 score: {G?.scores.player1 || 0}
+          </Text>
+        </View>
+
+        <Text style={styles.stat}>
+          <Text style={styles.stat}>Current Player: {G?.currentPlayer}</Text>
+        </Text>
       </View>
 
-      <TouchableOpacity
-        style={[styles.pingButton, !isConnected && styles.disabledButton]}
-        onPress={() => {
-          console.log("Ping button pressed");
-          if (moves?.ping) {
-            moves.ping();
-          } else {
-            console.log("moves.ping is not available");
-          }
-        }}
-        disabled={!isConnected}
-      >
-        <Text style={styles.buttonText}>PING!</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.pingButton, !isConnected && styles.disabledButton]}
+          onPress={() => {
+            moves.rollPoints();
+          }}
+          disabled={!isConnected}
+        >
+          <Text style={styles.buttonText}>Roll Points!</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.pingButton, !isConnected && styles.disabledButton]}
+          onPress={() => {
+            moves.skipTurn();
+          }}
+          disabled={!isConnected}
+        >
+          <Text style={styles.buttonText}>Skip Turn!</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -69,16 +85,34 @@ const BandGameClient = Client({
   game: {
     name: "band-game",
     setup: () => ({
-      lastPing: null,
-      pingCount: 0,
-      pongCount: 0,
+      scores: {
+        player0: 0,
+        player1: 0,
+      },
+      currentPlayer: "player0",
     }),
     moves: {
-      ping: ({ G, _ctx }: { G: GameState; _ctx: unknown }) => {
-        G.pingCount += 1;
-        G.pongCount += 1;
-        G.lastPing = new Date().toISOString();
+      rollPoints: ({ G, ctx }: { G: GameState; ctx: Ctx }) => {
+        G.scores[ctx.currentPlayer as keyof GameState["scores"]] += (
+          ctx._random as unknown as {
+            int: (min: number, max: number) => number;
+          }
+        ).int(1, 6);
       },
+      skipTurn: ({ G, ctx }: { G: GameState; ctx: Ctx }) => {
+        G.currentPlayer =
+          ctx.currentPlayer === "player0" ? "player1" : "player0";
+      },
+    },
+    turn: {
+      minMoves: 1,
+      maxMoves: 2,
+    },
+    endIf: ({ G }: { G: GameState }) => {
+      if (G.scores.player0 >= 10 || G.scores.player1 <= -10)
+        return { winner: "player0" };
+      if (G.scores.player1 >= 10 || G.scores.player0 <= -10)
+        return { winner: "player1" };
     },
   },
   board: GameBoard,
@@ -155,6 +189,10 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     marginBottom: 10,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 10,
   },
 });
 

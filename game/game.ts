@@ -1,5 +1,5 @@
 import { FnContext, Game } from 'boardgame.io';
-import { gameStateSchema, GameTurnContext, MoveContext, moveContextSchema, turnContextSchema } from '../zod/schemas';
+import { gameStateSchema, moveContextSchema } from '../zod/schemas';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import validateMove from '../boardgameio/moveValidators';
 import { z } from 'zod';
@@ -24,7 +24,7 @@ export const BandGame: Game<GameState> = {
             next: (context: FnContext<GameState>) => {
                 console.log("Turn context:", context);
 
-                const currentPlayer = parseInt(context.ctx.currentPlayer as string);
+                const currentPlayer = parseInt(context.ctx.currentPlayer);
                 const nextPlayer = (currentPlayer + 1) % 2;
 
                 console.log("Switching from player", currentPlayer, "to player", nextPlayer);

@@ -1,29 +1,58 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BandGameClient from "./BandGameClient";
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Text,
-  TextInput,
-} from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
+import { Game, LobbyAPI } from "boardgame.io";
+import { LobbyClient } from "boardgame.io/client";
+
+const DEV_LOBBY_URL = "http://192.168.50.218:8080";
+const lobbyClient = new LobbyClient({ server: DEV_LOBBY_URL });
+
+type MatchList = {
+  matchID: string;
+  players: string[];
+  setupData?: any;
+}[];
 
 export default function NewGame({ navigation }: Readonly<{ navigation: any }>) {
   const [player, setPlayer] = useState<"player0" | "player1">("player0");
-  const [matchId, setMatchId] = useState<string | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
+  const [games, setGames] = useState<string[]>([]);
+  const [matches, setMatches] = useState<LobbyAPI.Match[]>([]);
+  const [updatedMatches, setUpdatedMatches] = useState(false);
+
+  useEffect(() => {
+    lobbyClient.listGames().then((data) => setGames(data));
+    lobbyClient.listMatches("band-game").then((data) => {
+      const { matches } = data;
+      const newMatches = [...matches];
+      setMatches(newMatches);
+    });
+    setUpdatedMatches(false);
+  }, [updatedMatches]);
 
   const handleCreateGame = () => {
-    console.log("Create game");
-
-    setGameStarted(true);
+    lobbyClient
+      .createMatch("band-game", {
+        numPlayers: 2,
+        setupData: {
+          scores: {
+            player0: 0,
+            player1: 0,
+          },
+          currentPlayer: "player0",
+        },
+      })
+      .catch((err) => console.log(err))
+      .then(() => {
+        setUpdatedMatches(true);
+      });
   };
 
-  const handleJoinGame = () => {
-    console.log("Join game");
+  // const handleJoinGame = () => {
+  //   console.log("Join game");
 
-    setGameStarted(true);
-  };
+  //   setGameStarted(true);
+  // };
 
   return gameStarted ? (
     <View style={styles.container}>
@@ -40,22 +69,47 @@ export default function NewGame({ navigation }: Readonly<{ navigation: any }>) {
       >
         <Text style={styles.playerText}>Create game</Text>
       </TouchableOpacity>
-      <View style={styles.matchIdContainer}>
-        <TextInput
-          style={styles.matchIdInput}
-          placeholder="Match ID"
-          onChangeText={(text) => setMatchId(text)}
-          value={matchId ?? ""}
-        />
-        <TouchableOpacity
-          style={styles.joinGameButton}
-          onPress={() => {
-            setPlayer("player1");
-            handleJoinGame();
-          }}
-        >
-          <Text style={styles.joinGameText}>Join game</Text>
-        </TouchableOpacity>
+      <View style={styles.gamesContainer}>
+        {games.length > 0 ? (
+          games.map((game) => (
+            <Text style={styles.matchIdText} key={game}>
+              {game}
+            </Text>
+          ))
+        ) : (
+          <Text style={styles.matchIdText}>No games</Text>
+        )}
+        <Text style={styles.matchIdText}>Matches</Text>
+        {matches.map((match) => (
+          <View
+            style={[
+              styles.matchCard,
+              {
+                backgroundColor: "#2A2A2A",
+                padding: 15,
+                borderRadius: 10,
+                marginVertical: 8,
+                width: "90%",
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+              },
+            ]}
+            key={match.matchID}
+          >
+            <View style={styles.matchCardContent}>
+              <Text style={[styles.matchIcon, { marginRight: 15 }]}>🎮</Text>
+              <Text style={[styles.matchIdText, { flex: 1 }]}>
+                {match.matchID}
+              </Text>
+            </View>
+          </View>
+        ))}
       </View>
     </View>
   );
@@ -87,10 +141,11 @@ const styles = StyleSheet.create({
   playerText: {
     color: "white",
   },
-  matchIdContainer: {
+  gamesContainer: {
     flexDirection: "column",
     alignItems: "center",
     marginTop: 20,
+    width: "100%",
   },
   matchIdInput: {
     padding: 10,
@@ -103,5 +158,24 @@ const styles = StyleSheet.create({
     color: "white",
     backgroundColor: "lightgray",
     fontWeight: "bold",
+  },
+  matchIdText: {
+    fontSize: 16,
+    color: "white",
+    fontWeight: "bold",
+  },
+  matchCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  matchCardContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  matchIcon: {
+    fontSize: 24,
+    marginRight: 10,
   },
 });
